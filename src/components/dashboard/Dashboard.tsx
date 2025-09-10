@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { StatCard } from './StatCard';
 import { YearlyChart } from './YearlyChart';
 import { StockTable } from './StockTable';
+import { useIsMobile } from '../../hooks/use-mobile';
+import { Button } from '../ui/button';
+import { Menu } from 'lucide-react';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from '../ui/drawer';
 
 const statCards = [
   {
@@ -29,13 +38,28 @@ const statCards = [
 ];
 
 export const Dashboard = () => {
+  const isMobile = useIsMobile();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <Sidebar />
+      {isMobile ? (
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+            <Sidebar />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sidebar />
+      )}
       
       {/* Main Content */}
-      <div className="flex-1 ml-[260px]">
+      <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           {/* Top Bar */}
           <TopBar />
