@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -14,19 +17,21 @@ const iconColorClasses = {
 
 export const StatCard = ({ title, value, subtitle, iconColor, icon }: StatCardProps) => {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-card-border p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className="flex items-start justify-between">
+    <Card className="bg-white/80 backdrop-blur-sm border border-card-border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+      <CardHeader className="flex flex-row items-start justify-between pb-2">
         <div className="flex-1">
-          <h3 className="text-ink/70 text-sm font-medium mb-2">{title}</h3>
-          <div className="text-3xl font-semibold text-ink mb-2">{value}</div>
-          <a href="#" className="text-xs text-ink/60 hover:text-ink transition-colors">
-            {subtitle}
-          </a>
+          <CardTitle className="text-ink/70 text-sm font-medium">{title}</CardTitle>
+          <div className="text-3xl font-semibold text-ink mt-1">{value}</div>
         </div>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${iconColorClasses[iconColor]}`}>
           <span className="text-lg">{icon}</span>
         </div>
-      </div>
-    </div>
+      </CardHeader>
+      <CardContent>
+        <Link to="#" className="text-xs text-ink/60 hover:text-ink transition-colors">
+          {subtitle}
+        </Link>
+      </CardContent>
+    </Card>
   );
 };

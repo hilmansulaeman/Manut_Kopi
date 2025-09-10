@@ -32,7 +32,7 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
-      <Sidebar activePage="dashboard" />
+      <Sidebar />
       
       {/* Main Content */}
       <div className="flex-1 ml-[260px]">

@@ -1,116 +1,110 @@
-import { useState } from 'react';
-import { Search, ChevronDown, ChevronRight, LogOut, Settings } from 'lucide-react';
+import { Search, LogOut, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import LogoManut from '../../assets/Logo_manut.svg';
+import { Input } from '../ui/input';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '../ui/accordion';
 
 interface SidebarProps {
   className?: string;
-  activePage?: string;
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊', href: '/' },
+  { id: 'dashboard', label: 'Dashbord', icon: '📊', href: '/' },
   { 
     id: 'ingredient', 
-    label: 'Ingredient', 
+    label: 'Bahan Baku', 
     icon: '🧪', 
     hasSubmenu: true,
     submenu: [
-      { id: 'ingredient-library', label: 'Ingredient Library', href: '/ingredient/library' },
-      { id: 'ingredient-categories', label: 'Ingredient Categories', href: '/ingredient/categories' }
+      { id: 'ingredient-library', label: 'Halaman Bahan Baku', href: '/ingredient/library' },
+      { id: 'ingredient-categories', label: 'Kategori Bahan Baku', href: '/ingredient/categories' }
     ]
   },
-  { id: 'inventory', label: 'Inventory', icon: '📦', hasSubmenu: true },
-  { id: 'reports', label: 'All reports', icon: '📋' },
+  { id: 'reports', label: 'Semua Laporan', icon: '📋', href: '/reports' },
 ];
 
-export const Sidebar = ({ className = '', activePage }: SidebarProps) => {
+export const Sidebar = ({ className = '' }: SidebarProps) => {
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    new Set(activePage?.startsWith('ingredient') ? ['ingredient'] : [])
-  );
-
-  const toggleExpand = (itemId: string) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId);
-    } else {
-      newExpanded.add(itemId);
-    }
-    setExpandedItems(newExpanded);
-  };
 
   return (
     <div className={`fixed left-0 top-0 h-screen w-[260px] bg-ink text-white flex flex-col ${className}`}>
       {/* Brand */}
       <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-ink font-bold text-sm">
-            MK
-          </div>
-          <span className="font-bold text-lg">MANUT KOPI</span>
-        </div>
+        <Link to="/" className="flex items-center gap-3">
+          <img src={LogoManut} alt="Manut Kopi Logo" className="h-10" />
+        </Link>
       </div>
 
       {/* Search */}
       <div className="p-6 pb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
+          <Input
             type="text"
-            placeholder="Search"
-            className="w-full bg-white rounded-full pl-10 pr-4 py-2 text-ink placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+            placeholder="Cari"
+            className="w-full rounded-full pl-10 pr-4 py-2 text-ink placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 bg-white border-none"
           />
         </div>
       </div>
 
       {/* Menu */}
       <nav className="flex-1 px-4">
-        {menuItems.map((item) => (
-          <div key={item.id} className="mb-1">
-            {item.hasSubmenu ? (
-              <>
-                <button
-                  onClick={() => toggleExpand(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
-                    activePage === item.id ? 'bg-white/10' : ''
-                  }`}
-                >
-                  <span className="text-base">{item.icon}</span>
-                  <span className="font-medium text-sm flex-1">{item.label}</span>
-                  {expandedItems.has(item.id) ? 
-                    <ChevronDown className="w-4 h-4" /> : 
-                    <ChevronRight className="w-4 h-4" />
-                  }
-                </button>
-                {expandedItems.has(item.id) && item.submenu && (
-                  <div className="ml-8 mt-1 space-y-1">
-                    {item.submenu.map((subItem) => (
+        <Accordion 
+          type="multiple" 
+          className="w-full" 
+          defaultValue={
+            location.pathname.startsWith('/ingredient') 
+              ? ['ingredient'] 
+              : location.pathname.startsWith('/reports') 
+                ? ['reports'] 
+                : []
+          }
+        >
+          {menuItems.map((item) => (
+            <div key={item.id} className="mb-1">
+              {item.hasSubmenu ? (
+                <AccordionItem value={item.id} className="border-b-0">
+                  <AccordionTrigger 
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
+                      location.pathname.startsWith(item.href || '') ? 'bg-white/10' : ''
+                    }`}
+                  >
+                    <span className="text-base">{item.icon}</span>
+                    <span className="font-medium text-sm flex-1">{item.label}</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="ml-8 mt-1 space-y-1">
+                    {item.submenu && item.submenu.map((subItem) => (
                       <Link
                         key={subItem.id}
                         to={subItem.href}
                         className={`flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 hover:bg-white/10 ${
-                          activePage === subItem.id ? 'bg-white/10 font-medium' : ''
+                          location.pathname === subItem.href ? 'bg-white/10 font-medium' : ''
                         }`}
                       >
                         {subItem.label}
                       </Link>
                     ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <Link
-                to={item.href || '#'}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
-                  activePage === item.id ? 'bg-white/10' : ''
-                }`}
-              >
-                <span className="text-base">{item.icon}</span>
-                <span className="font-medium text-sm flex-1">{item.label}</span>
-              </Link>
-            )}
-          </div>
-        ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ) : (
+                <Link
+                  to={item.href || '#'}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
+                    location.pathname === item.href ? 'bg-white/10' : ''
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span className="font-medium text-sm flex-1">{item.label}</span>
+                </Link>
+              )}
+            </div>
+          ))}
+        </Accordion>
       </nav>
 
       {/* User Card */}
@@ -129,13 +123,13 @@ export const Sidebar = ({ className = '', activePage }: SidebarProps) => {
         </div>
         
         <div className="space-y-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 hover:bg-white/10">
+          <Link to="/settings" className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 hover:bg-white/10">
             <Settings className="w-4 h-4" />
-            <span className="text-sm">Settings</span>
-          </button>
+            <span className="text-sm">Pengaturan</span>
+          </Link>
           <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 hover:bg-white/10">
             <LogOut className="w-4 h-4" />
-            <span className="text-sm">Log out</span>
+            <span className="text-sm">Keluar</span>
             <div className="w-2 h-2 bg-red-500 rounded-full ml-auto"></div>
           </button>
         </div>
