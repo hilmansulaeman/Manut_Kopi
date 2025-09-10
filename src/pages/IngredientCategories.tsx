@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
-import { Plus, Upload, Edit2, Trash2, Download } from 'lucide-react';
+import { Plus, Upload, Edit2, Trash2, Download, Menu } from 'lucide-react';
 import { CategoryFormModal } from '../components/ingredient/CategoryFormModal';
 import { DeleteConfirmModal } from '../components/ingredient/DeleteConfirmModal';
 import { Button } from '@/components/ui/button';
 import { exportToXLSX, importFromXLSX } from '@/lib/exportUtils';
+import { useIsMobile } from '../hooks/use-mobile';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 interface Category {
   id: number;
@@ -22,9 +28,11 @@ const mockCategories: Category[] = [
 ];
 
 const IngredientCategories = () => {
+  const isMobile = useIsMobile();
   const [categories, setCategories] = useState<Category[]>(mockCategories);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
   const [categoryToEdit, setCategoryToEdit] = useState<Category | undefined>(undefined);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
@@ -106,11 +114,23 @@ const IngredientCategories = () => {
 
   return (
     <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <Sidebar />
+      {isMobile ? (
+        <Drawer open={isSidebarDrawerOpen} onOpenChange={setIsSidebarDrawerOpen} direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+            <Sidebar />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sidebar />
+      )}
       
       {/* Main Content */}
-      <div className="flex-1 ml-[260px]">
+      <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-8">

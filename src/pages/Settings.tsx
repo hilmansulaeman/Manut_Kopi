@@ -6,12 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '../hooks/use-mobile';
+import { Menu } from 'lucide-react';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 const Settings = () => {
+  const isMobile = useIsMobile();
   const [profileName, setProfileName] = useState('Jibut');
   const [profileEmail, setProfileEmail] = useState('jibut@example.com');
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
 
   const handleProfileSave = () => {
     // console.log('Profile saved:', { profileName, profileEmail });
@@ -20,8 +29,21 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-white flex">
-      <Sidebar />
-      <div className="flex-1 ml-[260px]">
+      {isMobile ? (
+        <Drawer open={isSidebarDrawerOpen} onOpenChange={setIsSidebarDrawerOpen} direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+            <Sidebar />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sidebar />
+      )}
+      <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
 
           <h1 className="text-2xl font-semibold text-ink mb-6">Pengaturan</h1>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
-import { Search, Plus, Upload, Download } from 'lucide-react';
+import { Search, Plus, Upload, Download, Menu } from 'lucide-react';
 import { CreateIngredientDrawer } from '../components/ingredient/CreateIngredientDrawer';
 import { Toaster } from '@/components/ui/toaster';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useIsMobile } from '../hooks/use-mobile';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 interface Ingredient {
   id: number;
@@ -35,8 +41,10 @@ const mockIngredients: Ingredient[] = [
 ];
 
 const IngredientLibrary = () => {
+  const isMobile = useIsMobile();
   const [ingredients, setIngredients] = useState<Ingredient[]>(mockIngredients);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua'); // Keep for future filtering if categories are added
   const [inStockFilter, setInStockFilter] = useState<string>('Semua'); // Keep for future filtering
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -87,11 +95,23 @@ const IngredientLibrary = () => {
 
   return (
     <div className="min-h-screen bg-white flex font-sans text-[#313131]">
-      {/* Sidebar */}
-      <Sidebar />
+      {isMobile ? (
+        <Drawer open={isSidebarDrawerOpen} onOpenChange={setIsSidebarDrawerOpen} direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+            <Sidebar />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sidebar />
+      )}
       
       {/* Main Content */}
-      <div className="flex-1 ml-[260px]">
+      <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-8">
