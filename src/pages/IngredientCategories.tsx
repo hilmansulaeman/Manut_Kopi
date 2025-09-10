@@ -133,10 +133,10 @@ const IngredientCategories = () => {
       <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           {/* Top Bar */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <h1 className="text-2xl font-semibold text-ink">Kategori Bahan Baku</h1>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <label htmlFor="import-categories-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-card-border bg-transparent hover:bg-black/5 text-ink h-10 px-4 py-2 cursor-pointer">
                 <Upload className="w-4 h-4 mr-2" />
                 Impor
