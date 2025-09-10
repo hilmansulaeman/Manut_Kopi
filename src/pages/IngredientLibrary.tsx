@@ -114,10 +114,10 @@ const IngredientLibrary = () => {
       <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           {/* Top Bar */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <h1 className="text-2xl font-semibold text-[#313131]">Halaman Bahan Baku</h1>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <label htmlFor="import-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-black/5 bg-transparent hover:bg-black/5 text-[#313131] h-10 px-4 py-2 cursor-pointer">
                 <Upload className="w-4 h-4 mr-2" />
                 Impor
@@ -139,9 +139,9 @@ const IngredientLibrary = () => {
           </div>
           
           {/* Filters */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
               <SelectContent>
@@ -154,7 +154,7 @@ const IngredientLibrary = () => {
             </Select>
 
             <Select value={inStockFilter} onValueChange={setInStockFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Pilih Status Stok" />
               </SelectTrigger>
               <SelectContent>
@@ -166,7 +166,7 @@ const IngredientLibrary = () => {
               </SelectContent>
             </Select>
 
-            <div className="flex-1 relative">
+            <div className="flex-1 relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
