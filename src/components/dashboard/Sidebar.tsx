@@ -1,19 +1,33 @@
 import { useState } from 'react';
 import { Search, ChevronDown, ChevronRight, LogOut, Settings } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 interface SidebarProps {
   className?: string;
+  activePage?: string;
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊', active: true },
-  { id: 'ingredient', label: 'Ingredient', icon: '🧪', hasSubmenu: true },
+  { id: 'dashboard', label: 'Dashboard', icon: '📊', href: '/' },
+  { 
+    id: 'ingredient', 
+    label: 'Ingredient', 
+    icon: '🧪', 
+    hasSubmenu: true,
+    submenu: [
+      { id: 'ingredient-library', label: 'Ingredient Library', href: '/ingredient/library' },
+      { id: 'ingredient-categories', label: 'Ingredient Categories', href: '/ingredient/categories' }
+    ]
+  },
   { id: 'inventory', label: 'Inventory', icon: '📦', hasSubmenu: true },
   { id: 'reports', label: 'All reports', icon: '📋' },
 ];
 
-export const Sidebar = ({ className = '' }: SidebarProps) => {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+export const Sidebar = ({ className = '', activePage }: SidebarProps) => {
+  const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(
+    new Set(activePage?.startsWith('ingredient') ? ['ingredient'] : [])
+  );
 
   const toggleExpand = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -53,20 +67,48 @@ export const Sidebar = ({ className = '' }: SidebarProps) => {
       <nav className="flex-1 px-4">
         {menuItems.map((item) => (
           <div key={item.id} className="mb-1">
-            <button
-              onClick={() => item.hasSubmenu && toggleExpand(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
-                item.active ? 'bg-white/10' : ''
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              <span className="font-medium text-sm flex-1">{item.label}</span>
-              {item.hasSubmenu && (
-                expandedItems.has(item.id) ? 
-                  <ChevronDown className="w-4 h-4" /> : 
-                  <ChevronRight className="w-4 h-4" />
-              )}
-            </button>
+            {item.hasSubmenu ? (
+              <>
+                <button
+                  onClick={() => toggleExpand(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
+                    activePage === item.id ? 'bg-white/10' : ''
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span className="font-medium text-sm flex-1">{item.label}</span>
+                  {expandedItems.has(item.id) ? 
+                    <ChevronDown className="w-4 h-4" /> : 
+                    <ChevronRight className="w-4 h-4" />
+                  }
+                </button>
+                {expandedItems.has(item.id) && item.submenu && (
+                  <div className="ml-8 mt-1 space-y-1">
+                    {item.submenu.map((subItem) => (
+                      <Link
+                        key={subItem.id}
+                        to={subItem.href}
+                        className={`flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 hover:bg-white/10 ${
+                          activePage === subItem.id ? 'bg-white/10 font-medium' : ''
+                        }`}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <Link
+                to={item.href || '#'}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:bg-white/10 ${
+                  activePage === item.id ? 'bg-white/10' : ''
+                }`}
+              >
+                <span className="text-base">{item.icon}</span>
+                <span className="font-medium text-sm flex-1">{item.label}</span>
+              </Link>
+            )}
           </div>
         ))}
       </nav>
