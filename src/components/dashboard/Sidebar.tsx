@@ -1,4 +1,4 @@
-import { Search, LogOut, Settings } from 'lucide-react';
+import { Search, LogOut, Settings, FileBarChart } from 'lucide-react';
 import { Squares2X2Icon, ArchiveBoxIcon } from '@heroicons/react/24/outline'; // Import Squares2X2Icon and ArchiveBoxIcon
 import { Link, useLocation } from 'react-router-dom';
 import LogoManut from '../../assets/Logo_manut.svg';
@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
       { id: 'ingredient-categories', label: 'Kategori Bahan Baku', href: '/ingredient/categories' }
     ]
   },
-  { id: 'reports', label: 'Semua Laporan', icon: () => <span className="text-base">📋</span>, href: '/reports' }, // Placeholder for now
+  { id: 'reports', label: 'Semua Laporan', icon: FileBarChart, href: '/reports' },
 ];
 
 export const Sidebar = ({ className = '' }: SidebarProps) => {

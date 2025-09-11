@@ -17,8 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Download } from 'lucide-react';
+import { Download, Menu } from 'lucide-react';
 import { exportToXLSX } from '@/lib/exportUtils';
+import { useIsMobile } from '../hooks/use-mobile';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 interface ReportItem {
   id: number;
@@ -36,13 +42,28 @@ const mockReports: ReportItem[] = [
 ];
 
 const AllReports = () => {
+  const isMobile = useIsMobile();
   const [reports, setReports] = useState<ReportItem[]>(mockReports);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
 
   return (
     <div className="min-h-screen bg-white flex">
-      <Sidebar />
-      <div className="flex-1 ml-[260px]">
+      {isMobile ? (
+        <Drawer open={isSidebarDrawerOpen} onOpenChange={setIsSidebarDrawerOpen} direction="left">
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+            <Sidebar />
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Sidebar />
+      )}
+      <div className={`flex-1 ${!isMobile ? 'ml-[260px]' : ''}`}>
         <div className="max-w-[1200px] mx-auto px-6 py-8">
           
           <div className="flex items-center justify-between mb-6">
