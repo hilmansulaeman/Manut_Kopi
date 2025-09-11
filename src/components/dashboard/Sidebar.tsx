@@ -1,4 +1,5 @@
 import { Search, LogOut, Settings } from 'lucide-react';
+import { Squares2X2Icon, ArchiveBoxIcon } from '@heroicons/react/24/outline'; // Import Squares2X2Icon and ArchiveBoxIcon
 import { Link, useLocation } from 'react-router-dom';
 import LogoManut from '../../assets/Logo_manut.svg';
 import { Input } from '../ui/input';
@@ -13,19 +14,28 @@ interface SidebarProps {
   className?: string;
 }
 
-const menuItems = [
-  { id: 'dashboard', label: 'Dashbord', icon: '📊', href: '/' },
+interface MenuItem {
+  id: string;
+  label: string;
+  icon?: React.ElementType; // Change icon type to React.ElementType
+  href?: string;
+  hasSubmenu?: boolean;
+  submenu?: { id: string; label: string; href: string; }[];
+}
+
+const menuItems: MenuItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: Squares2X2Icon, href: '/' },
   { 
     id: 'ingredient', 
-    label: 'Bahan Baku', 
-    icon: '🧪', 
+    label: 'Bahan Baku',  
+    icon: ArchiveBoxIcon, // Use ArchiveBoxIcon for Bahan Baku
     hasSubmenu: true,
     submenu: [
       { id: 'ingredient-library', label: 'Halaman Bahan Baku', href: '/ingredient/library' },
       { id: 'ingredient-categories', label: 'Kategori Bahan Baku', href: '/ingredient/categories' }
     ]
   },
-  { id: 'reports', label: 'Semua Laporan', icon: '📋', href: '/reports' },
+  { id: 'reports', label: 'Semua Laporan', icon: () => <span className="text-base">📋</span>, href: '/reports' }, // Placeholder for now
 ];
 
 export const Sidebar = ({ className = '' }: SidebarProps) => {
@@ -74,7 +84,7 @@ export const Sidebar = ({ className = '' }: SidebarProps) => {
                       location.pathname.startsWith(item.href || '') ? 'bg-white/10' : ''
                     }`}
                   >
-                    <span className="text-base">{item.icon}</span>
+                    {item.icon && <item.icon className="w-5 h-5" />} {/* Render icon as component */}
                     <span className="font-medium text-sm flex-1">{item.label}</span>
                   </AccordionTrigger>
                   <AccordionContent className="ml-8 mt-1 space-y-1">
@@ -98,7 +108,7 @@ export const Sidebar = ({ className = '' }: SidebarProps) => {
                     location.pathname === item.href ? 'bg-white/10' : ''
                   }`}
                 >
-                  <span className="text-base">{item.icon}</span>
+                  {item.icon && <item.icon className="w-5 h-5" />} {/* Render icon as component */}
                   <span className="font-medium text-sm flex-1">{item.label}</span>
                 </Link>
               )}
