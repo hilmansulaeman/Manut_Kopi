@@ -1,6 +1,6 @@
 import { Search, LogOut, Settings, FileBarChart } from 'lucide-react';
 import { Squares2X2Icon, ArchiveBoxIcon } from '@heroicons/react/24/outline'; // Import Squares2X2Icon and ArchiveBoxIcon
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LogoManut from '../../assets/Logo_manut.svg';
 import { Input } from '../ui/input';
 import {
@@ -40,6 +40,13 @@ const menuItems: MenuItem[] = [
 
 export const Sidebar = ({ className = '' }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Perform any cleanup here, e.g., clearing local storage, auth tokens
+    console.log('Logging out...');
+    navigate('/login');
+  };
 
   return (
     <div className={`fixed left-0 top-0 h-screen w-[260px] bg-ink text-white flex flex-col ${className}`}>
@@ -137,7 +144,10 @@ export const Sidebar = ({ className = '' }: SidebarProps) => {
             <Settings className="w-4 h-4" />
             <span className="text-sm">Pengaturan</span>
           </Link>
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 hover:bg-white/10">
+          <button 
+            onClick={handleLogout} 
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200 hover:bg-white/10"
+          >
             <LogOut className="w-4 h-4" />
             <span className="text-sm">Keluar</span>
             <div className="w-2 h-2 bg-red-500 rounded-full ml-auto"></div>
