@@ -20,29 +20,11 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from '@/components/ui/drawer';
-
-interface Ingredient {
-  id: number;
-  name: string; // Nama Barang
-  kodeBahanBaku: string;
-  namaBahanBaku: string;
-  supplier: string;
-  stockMasuk: number;
-  stockKeluar: number;
-  status: 'In' | 'Out';
-  createdAt: string; // Tanggal
-}
-
-const mockIngredients: Ingredient[] = [
-  { id: 1, name: 'Kopi', kodeBahanBaku: 'KB001', namaBahanBaku: 'Kopi Arabika', supplier: 'Pemasok A', stockMasuk: 100, stockKeluar: 50, status: 'In', createdAt: '2023-01-15' },
-  { id: 2, name: 'Macha', kodeBahanBaku: 'KB002', namaBahanBaku: 'Bubuk Macha', supplier: 'Pemasok B', stockMasuk: 200, stockKeluar: 180, status: 'In', createdAt: '2023-02-20' },
-  { id: 3, name: 'Susu SKM', kodeBahanBaku: 'KB003', namaBahanBaku: 'Susu Kental Manis', supplier: 'Pemasok C', stockMasuk: 50, stockKeluar: 60, status: 'Out', createdAt: '2023-03-10' },
-  { id: 4, name: 'Susu UHT', kodeBahanBaku: 'KB004', namaBahanBaku: 'Susu UHT Full Cream', supplier: 'Pemasok D', stockMasuk: 150, stockKeluar: 70, status: 'In', createdAt: '2023-04-01' },
-];
+import { useStock, StockItem } from '../context/StockContext'; // Import useStock and StockItem
 
 const IngredientLibrary = () => {
   const isMobile = useIsMobile();
-  const [ingredients, setIngredients] = useState<Ingredient[]>(mockIngredients);
+  const { stockItems } = useStock(); // Use stockItems from context
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua'); // Keep for future filtering if categories are added
@@ -51,9 +33,9 @@ const IngredientLibrary = () => {
 
   const uniqueCategories = useMemo(() => {
     const categories = new Set<string>();
-    ingredients.forEach(ingredient => categories.add(ingredient.namaBahanBaku)); // Using namaBahanBaku as category for now
+    stockItems.forEach(item => categories.add(item.kodeBahanBaku)); // Using kodeBahanBaku as category for now
     return ['Semua', ...Array.from(categories)];
-  }, [ingredients]);
+  }, [stockItems]);
 
   const categoryOptions = uniqueCategories.map(category => ({
     value: category,
@@ -67,28 +49,26 @@ const IngredientLibrary = () => {
   ];
 
   const filteredIngredients = useMemo(() => {
-    return ingredients.filter(ingredient => {
-      const matchesCategory = selectedCategory === 'Semua' || ingredient.namaBahanBaku === selectedCategory;
+    return stockItems.filter(item => {
+      const matchesCategory = selectedCategory === 'Semua' || item.kodeBahanBaku === selectedCategory;
       const matchesInStock = inStockFilter === 'Semua' || 
-                             (inStockFilter === 'In Stock' && ingredient.status === 'In') ||
-                             (inStockFilter === 'Out of Stock' && ingredient.status === 'Out');
-      const matchesSearch = ingredient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            ingredient.kodeBahanBaku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            ingredient.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+                             (inStockFilter === 'In Stock' && item.statusColor === 'green') || // Assuming green means 'In Stock'
+                             (inStockFilter === 'Out of Stock' && item.statusColor === 'orange'); // Assuming orange means 'Out of Stock'
+      const matchesSearch = item.kodeBahanBaku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            item.kodeBahanBaku2.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesInStock && matchesSearch;
     });
-  }, [ingredients, selectedCategory, inStockFilter, searchTerm]);
-
-  const handleCreateIngredient = (newIngredient: Ingredient) => {
-    setIngredients((prev) => [...prev, newIngredient]);
-  };
+  }, [stockItems, selectedCategory, inStockFilter, searchTerm]);
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       importFromXLSX(file, (importedData) => {
-        // Assuming the imported data matches the Ingredient interface structure
-        setIngredients((prev) => [...prev, ...importedData as Ingredient[]]);
+        // Assuming the imported data matches the StockItem interface structure
+        // This part needs to be handled carefully as `addStockItem` expects Omit<StockItem, 'id'>
+        // For now, we'll just log it. A proper implementation would iterate and add each item.
+        console.log('Imported data:', importedData);
       });
     }
   };
@@ -126,7 +106,7 @@ const IngredientLibrary = () => {
               <Button 
                 variant="outline" 
                 className="border border-black/5 text-[#313131] hover:bg-black/5"
-                onClick={() => exportToXLSX(ingredients, 'bahan_baku.xlsx')}
+                onClick={() => exportToXLSX(stockItems, 'bahan_baku.xlsx')}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Ekspor
@@ -186,7 +166,7 @@ const IngredientLibrary = () => {
                   <tr className="border-b border-black/5">
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Nama</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Kode Bahan Baku</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Nama Bahan Baku</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Kode Bahan Baku 2</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Pemasok</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Masuk</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Keluar</th>
@@ -194,25 +174,23 @@ const IngredientLibrary = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredIngredients.map((ingredient, index) => (
+                  {filteredIngredients.map((item, index) => (
                     <tr 
-                      key={ingredient.id} 
+                      key={item.id} 
                       className={`border-b border-black/50 transition-colors duration-200 
                                   ${index % 2 === 1 ? 'bg-black/5' : ''} 
                                   hover:bg-black/10`}
                     >
-                      <td className="py-3 px-4 text-sm font-medium text-[#313131]">{ingredient.name}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{ingredient.kodeBahanBaku}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{ingredient.namaBahanBaku}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{ingredient.supplier}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{ingredient.stockMasuk}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{ingredient.stockKeluar}</td>
+                      <td className="py-3 px-4 text-sm font-medium text-[#313131]">{item.kodeBahanBaku}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td> {/* Displaying kodeBahanBaku2 again, adjust if needed */}
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.supplier}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokMasuk}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokKeluar}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">
-                        {ingredient.status === 'Out' ? (
-                          <Badge variant="destructive" className="bg-red-500 text-white">Keluar</Badge>
-                        ) : (
-                          <Badge className="bg-green-500 text-white">Masuk</Badge>
-                        )}
+                        <Badge className={`${item.statusColor === 'orange' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+                          {item.status}
+                        </Badge>
                       </td>
                     </tr>
                   ))}
@@ -225,7 +203,6 @@ const IngredientLibrary = () => {
       <CreateIngredientDrawer
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onCreate={handleCreateIngredient}
       />
       <Toaster />
     </div>

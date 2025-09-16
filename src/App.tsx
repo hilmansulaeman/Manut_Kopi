@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import SplashScreen from "./components/SplashScreen";
+import { ProfileProvider } from "./context/ProfileContext"; // Import ProfileProvider
+import { StockProvider } from "./context/StockContext"; // Import StockProvider
 
 const queryClient = new QueryClient();
 
@@ -50,7 +52,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppContent />
+        <ProfileProvider> {/* Wrap AppContent with ProfileProvider */}
+          <StockProvider> {/* Wrap AppContent with StockProvider */}
+            <AppContent />
+          </StockProvider>
+        </ProfileProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

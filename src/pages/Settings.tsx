@@ -13,18 +13,55 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { useToast } from '@/components/ui/use-toast'; // Assuming this is the correct path for useToast
+import { Toaster } from '@/components/ui/toaster'; // Assuming this is the correct path for Toaster
+import { useProfile } from '../context/ProfileContext'; // Import useProfile
 
 const Settings = () => {
   const isMobile = useIsMobile();
-  const [profileName, setProfileName] = useState('Jibut');
+  const { toast } = useToast();
+  const { profileName, setProfileName } = useProfile(); // Use profileName and setProfileName from context
   const [profileEmail, setProfileEmail] = useState('jibut@example.com');
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
 
   const handleProfileSave = () => {
-    // console.log('Profile saved:', { profileName, profileEmail });
     // Implement actual save logic here
+    toast({
+      title: 'Profil Diperbarui',
+      description: 'Informasi profil Anda telah berhasil diperbarui.',
+    });
+  };
+
+  const handleNotificationSave = () => {
+    // Implement actual save logic here
+    toast({
+      title: 'Notifikasi Diperbarui',
+      description: 'Pengaturan notifikasi Anda telah berhasil diperbarui.',
+    });
+  };
+
+  const handlePasswordChange = () => {
+    if (newPassword !== confirmNewPassword) {
+      toast({
+        title: 'Gagal Memperbarui Kata Sandi',
+        description: 'Kata sandi baru dan konfirmasi kata sandi tidak cocok.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    // Implement actual password change logic here
+    toast({
+      title: 'Kata Sandi Diperbarui',
+      description: 'Kata sandi Anda telah berhasil diperbarui.',
+    });
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
   };
 
   return (
@@ -102,7 +139,7 @@ const Settings = () => {
                       className="data-[state=checked]:bg-green-500"
                     />
                   </div>
-                  <Button>Simpan perubahan</Button>
+                  <Button onClick={handleNotificationSave}>Simpan perubahan</Button>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -117,23 +154,42 @@ const Settings = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="current-password">Kata Sandi Saat Ini</Label>
-                    <Input id="current-password" type="password" placeholder="Masukkan kata sandi saat ini" />
+                    <Input
+                      id="current-password"
+                      type="password"
+                      placeholder="Masukkan kata sandi saat ini"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="new-password">Kata Sandi Baru</Label>
-                    <Input id="new-password" type="password" placeholder="Masukkan kata sandi baru" />
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="Masukkan kata sandi baru"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm-password">Konfirmasi Kata Sandi Baru</Label>
-                    <Input id="confirm-password" type="password" placeholder="Konfirmasi kata sandi baru" />
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="Konfirmasi kata sandi baru"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    />
                   </div>
-                  <Button>Perbarui Kata Sandi</Button>
+                  <Button onClick={handlePasswordChange}>Perbarui Kata Sandi</Button>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };

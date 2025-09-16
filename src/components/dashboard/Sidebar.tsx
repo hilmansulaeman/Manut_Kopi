@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '../ui/accordion';
+import { useProfile } from '../../context/ProfileContext'; // Import useProfile
 
 interface SidebarProps {
   className?: string;
@@ -41,6 +42,7 @@ const menuItems: MenuItem[] = [
 export const Sidebar = ({ className = '' }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { profileName } = useProfile(); // Use profileName from context
 
   const handleLogout = () => {
     // Perform any cleanup here, e.g., clearing local storage, auth tokens
@@ -128,10 +130,10 @@ export const Sidebar = ({ className = '' }: SidebarProps) => {
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-            JI
+            {profileName.substring(0, 2).toUpperCase()}
           </div>
           <div className="flex-1">
-            <div className="font-medium text-sm">Jibut</div>
+            <div className="font-medium text-sm">{profileName}</div>
             <div className="flex items-center gap-2 mt-1">
               <div className="w-2 h-2 bg-status-green rounded-full"></div>
               <span className="text-xs text-gray-300">Admin</span>

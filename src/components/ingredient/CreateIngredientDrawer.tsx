@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useStock, StockItem } from '../../context/StockContext'; // Import useStock and StockItem
 
 // Zod schema for form validation
 const formSchema = z.object({
@@ -37,11 +38,11 @@ type IngredientFormValues = z.infer<typeof formSchema>;
 interface CreateIngredientDrawerProps {
   open: boolean;
   onClose: () => void;
-  onCreate: (newRow: any) => void; // Will be updated with a proper type later
 }
 
-export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ open, onClose, onCreate }) => {
+export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ open, onClose }) => {
   const { toast } = useToast();
+  const { addStockItem } = useStock(); // Use addStockItem from context
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<IngredientFormValues>({
@@ -61,32 +62,30 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const newIngredient = {
-        id: Math.floor(Math.random() * 100000), // Temporary ID
-        name: values.namaBarang,
-        kodeBahanBaku: values.kodeBahanBaku,
-        namaBahanBaku: values.namaBarang, // Assuming namaBarang is also namaBahanBaku
+      const newStockItem: Omit<StockItem, 'id'> = {
+        kodeBahanBaku: values.namaBarang, // Using namaBarang as the main kodeBahanBaku for display
+        kodeBahanBaku2: values.kodeBahanBakuKedua,
         supplier: values.supplier,
-        stockMasuk: 0, // Default value
-        stockKeluar: 0, // Default value
-        status: 'In', // Default status
-        createdAt: new Date().toISOString(),
+        stokMasuk: '0 Unit', // Default value, can be expanded later
+        stokKeluar: '0 Unit', // Default value, can be expanded later
+        status: 'Baru', // Default status
+        statusColor: 'green', // Default color
       };
 
-      onCreate(newIngredient);
+      addStockItem(newStockItem); // Add to global stock state
       toast({
         title: 'Berhasil!',
-        description: 'Bahan baku berhasil ditambahkan.',
+        description: 'Bahan baku berhasil ditambahkan ke stok.',
       });
       form.reset();
       onClose();
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal menambahkan bahan baku.',
+        description: 'Gagal menambahkan bahan baku ke stok.',
         variant: 'destructive',
       });
-      console.error('Failed to add ingredient:', error);
+      console.error('Failed to add ingredient to stock:', error);
     } finally {
       setIsLoading(false);
     }
