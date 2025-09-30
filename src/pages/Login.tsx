@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import LogoManut from '@/assets/Logo_manut.svg'; // Import the SVG logo as a URL
+import { useProfile } from '../context/ProfileContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useProfile(); // Destructure login from useProfile
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,6 +21,7 @@ const Login: React.FC = () => {
     // Hardcoded login for demonstration
     if (username === 'admin' && password === 'password') {
       console.log('Login successful!');
+      login(username); // Use the login function from context
       navigate('/'); // Redirect to dashboard
     } else {
       setError('Invalid username or password.');

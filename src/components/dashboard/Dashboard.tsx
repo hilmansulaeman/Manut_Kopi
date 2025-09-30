@@ -7,6 +7,7 @@ import { StockTable } from './StockTable';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { Button } from '../ui/button';
 import { Menu } from 'lucide-react';
+import { useStock } from '../../context/StockContext';
 import {
   Drawer,
   DrawerContent,
@@ -40,6 +41,56 @@ const statCards = [
 export const Dashboard = () => {
   const isMobile = useIsMobile();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { stockItems, getLowStockItems } = useStock();
+
+  const totalIngredients = stockItems.length;
+  const totalStockIn = stockItems.reduce((sum, item) => sum + item.stokMasuk, 0);
+  const totalStockOut = stockItems.reduce((sum, item) => sum + item.stokKeluar, 0);
+  const currentTotalStock = totalStockIn - totalStockOut;
+
+  const lowStockCount = getLowStockItems(10).length; // Using a threshold of 10
+  const outOfStockCount = getLowStockItems(0).length; // Using a threshold of 0 for out of stock
+
+  let overallStockStatus = 'Aman';
+  let overallStockStatusColor: 'green' | 'orange' | 'red' = 'green';
+  if (outOfStockCount > 0) {
+    overallStockStatus = 'Habis Stok';
+    overallStockStatusColor = 'red';
+  } else if (lowStockCount > 0) {
+    overallStockStatus = 'Menipis';
+    overallStockStatusColor = 'orange';
+  }
+
+  const dashboardStatCards = [
+    {
+      title: 'Jumlah Bahan Baku',
+      value: totalIngredients,
+      subtitle: `${totalIngredients} Jenis Bahan Baku`,
+      iconColor: 'green' as const,
+      icon: '📦',
+    },
+    {
+      title: 'Total Stok Masuk',
+      value: totalStockIn,
+      subtitle: 'Semua Bahan Baku',
+      iconColor: 'blue' as const,
+      icon: '📈',
+    },
+    {
+      title: 'Total Stok Keluar',
+      value: totalStockOut,
+      subtitle: 'Semua Bahan Baku',
+      iconColor: 'pink' as const,
+      icon: '📉',
+    },
+    {
+      title: 'Status Stok Keseluruhan',
+      value: overallStockStatus,
+      subtitle: `(${lowStockCount} Menipis, ${outOfStockCount} Habis)`,
+      iconColor: overallStockStatusColor,
+      icon: '📊',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -65,8 +116,8 @@ export const Dashboard = () => {
           <TopBar />
           
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {statCards.map((card, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {dashboardStatCards.map((card, index) => (
               <StatCard
                 key={index}
                 title={card.title}

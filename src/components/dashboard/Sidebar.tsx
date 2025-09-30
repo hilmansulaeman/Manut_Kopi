@@ -32,8 +32,7 @@ const menuItems: MenuItem[] = [
     icon: ArchiveBoxIcon, // Use ArchiveBoxIcon for Bahan Baku
     hasSubmenu: true,
     submenu: [
-      { id: 'ingredient-library', label: 'Halaman Bahan Baku', href: '/ingredient/library' },
-      { id: 'ingredient-categories', label: 'Kategori Bahan Baku', href: '/ingredient/categories' }
+      { id: 'ingredient-library', label: 'Halaman Bahan Baku', href: '/ingredient/library' }
     ]
   },
   { id: 'reports', label: 'Semua Laporan', icon: FileBarChart, href: '/reports' },

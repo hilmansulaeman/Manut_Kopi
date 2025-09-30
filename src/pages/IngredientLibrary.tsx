@@ -1,12 +1,19 @@
 import { useState, useMemo } from 'react';
 import { Sidebar } from '../components/dashboard/Sidebar';
-import { Search, Plus, Upload, Download, Menu } from 'lucide-react';
+import { Search, Plus, Upload, Download, Menu, MoreHorizontal, Edit } from 'lucide-react';
 import { CreateIngredientDrawer } from '../components/ingredient/CreateIngredientDrawer';
+import EditIngredientDrawer from '../components/ingredient/EditIngredientDrawer';
 import { Toaster } from '@/components/ui/toaster';
 import { Badge } from '@/components/ui/badge';
 import { exportToXLSX, importFromXLSX } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -21,15 +28,21 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { useStock, StockItem } from '../context/StockContext'; // Import useStock and StockItem
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { BellRing } from 'lucide-react';
 
 const IngredientLibrary = () => {
   const isMobile = useIsMobile();
-  const { stockItems } = useStock(); // Use stockItems from context
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { stockItems, getLowStockItems } = useStock(); // Use stockItems and getLowStockItems from context
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState<StockItem | null>(null);
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua'); // Keep for future filtering if categories are added
   const [inStockFilter, setInStockFilter] = useState<string>('Semua'); // Keep for future filtering
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const lowStockItems = useMemo(() => getLowStockItems(10), [stockItems, getLowStockItems]); // Threshold of 10 for low stock
 
   const uniqueCategories = useMemo(() => {
     const categories = new Set<string>();
@@ -111,12 +124,27 @@ const IngredientLibrary = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Ekspor
               </Button>
-              <Button onClick={() => setIsDrawerOpen(true)} className="bg-[#313131] text-white hover:bg-[#313131]/90">
+              <Button onClick={() => setIsCreateDrawerOpen(true)} className="bg-[#313131] text-white hover:bg-[#313131]/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Buat Bahan Baku
               </Button>
             </div>
           </div>
+
+          {lowStockItems.length > 0 && (
+            <Alert className="mb-6 bg-orange-100 border-orange-400 text-orange-800">
+              <BellRing className="h-4 w-4" />
+              <AlertTitle>Peringatan Stok Menipis!</AlertTitle>
+              <AlertDescription>
+                Bahan baku berikut memiliki stok menipis atau habis:
+                <ul className="list-disc pl-5 mt-2">
+                  {lowStockItems.map(item => (
+                    <li key={item.id}>{item.kodeBahanBaku} (Sisa: {item.stokMasuk - item.stokKeluar} {item.unit})</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
           
           {/* Filters */}
           <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
@@ -170,7 +198,9 @@ const IngredientLibrary = () => {
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Pemasok</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Masuk</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Keluar</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Unit</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Status</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-[#313131]/70">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,16 +211,45 @@ const IngredientLibrary = () => {
                                   ${index % 2 === 1 ? 'bg-black/5' : ''} 
                                   hover:bg-black/10`}
                     >
-                      <td className="py-3 px-4 text-sm font-medium text-[#313131]">{item.kodeBahanBaku}</td>
+                      <td className="py-3 px-4 text-sm font-medium text-[#313131]">
+                        <a 
+                          href={`/ingredient/detail/${item.id}`} 
+                          className="text-blue-600 hover:underline"
+                        >
+                          {item.kodeBahanBaku}
+                        </a>
+                      </td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td> {/* Displaying kodeBahanBaku2 again, adjust if needed */}
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.supplier}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokMasuk}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokKeluar}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.unit}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">
                         <Badge className={`${item.statusColor === 'orange' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
                           {item.status}
                         </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setEditingIngredient(item);
+                                setIsEditDrawerOpen(true);
+                              }}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}
@@ -201,8 +260,16 @@ const IngredientLibrary = () => {
         </div>
       </div>
       <CreateIngredientDrawer
-        open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        open={isCreateDrawerOpen}
+        onClose={() => setIsCreateDrawerOpen(false)}
+      />
+      <EditIngredientDrawer
+        open={isEditDrawerOpen}
+        onClose={() => {
+          setIsEditDrawerOpen(false);
+          setEditingIngredient(null);
+        }}
+        ingredient={editingIngredient}
       />
       <Toaster />
     </div>

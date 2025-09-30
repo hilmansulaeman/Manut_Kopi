@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -25,6 +25,8 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useStock } from '../context/StockContext';
 
 interface ReportItem {
   id: number;
@@ -43,9 +45,35 @@ const mockReports: ReportItem[] = [
 
 const AllReports = () => {
   const isMobile = useIsMobile();
+  const { stockItems } = useStock();
   const [reports, setReports] = useState<ReportItem[]>(mockReports);
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
+
+  // Generate monthly stock data for the current year
+  const generateMonthlyStockData = () => {
+    const currentYear = new Date().getFullYear();
+    const monthlyData: { name: string; totalStock: number }[] = Array.from({ length: 12 }, (_, i) => ({
+      name: new Date(currentYear, i).toLocaleString('id-ID', { month: 'short' }),
+      totalStock: 0,
+    }));
+
+    stockItems.forEach(item => {
+      // For simplicity, let's assume stock changes are not tracked by date in StockItem
+      // We'll just distribute the current stock across months for visualization
+      // In a real application, you would have dated stock transactions
+      const currentStock = item.stokMasuk - item.stokKeluar;
+      // Distribute current stock evenly across all months for a basic visualization
+      // This is a placeholder and should be replaced with actual historical data if available
+      monthlyData.forEach(month => {
+        month.totalStock += currentStock / 12; // Even distribution
+      });
+    });
+
+    return monthlyData;
+  };
+
+  const monthlyStockData = generateMonthlyStockData();
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -86,6 +114,35 @@ const AllReports = () => {
               </Button>
             </div>
           </div>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Grafik Stok Bulanan ({new Date().getFullYear()})</CardTitle>
+              <CardDescription>Menampilkan total stok bahan baku per bulan.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <LineChart
+                    data={monthlyStockData}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="totalStock" stroke="#8884d8" activeDot={{ r: 8 }} name="Total Stok" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

@@ -5,7 +5,7 @@ interface StatCardProps {
   title: string;
   value: string | number;
   subtitle: string;
-  iconColor: 'green' | 'blue' | 'pink';
+  iconColor: 'green' | 'blue' | 'pink' | 'orange' | 'red';
   icon: string;
 }
 
@@ -13,6 +13,8 @@ const iconColorClasses = {
   green: 'bg-status-green/10 text-status-green',
   blue: 'bg-status-blue/10 text-status-blue',
   pink: 'bg-status-pink/10 text-status-pink',
+  orange: 'bg-orange-100 text-orange-600', // Added orange color class
+  red: 'bg-red-100 text-red-600',       // Added red color class
 };
 
 export const StatCard = ({ title, value, subtitle, iconColor, icon }: StatCardProps) => {

@@ -23,14 +23,28 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useStock, StockItem } from '../../context/StockContext'; // Import useStock and StockItem
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Zod schema for form validation
 const formSchema = z.object({
   kodeBahanBaku: z.string().min(1, { message: 'Kode Bahan Baku wajib diisi' }),
   namaBarang: z.string().min(1, { message: 'Nama Barang wajib diisi' }),
   supplier: z.string().min(1, { message: 'Pemasok wajib diisi' }),
-  tanggal: z.string().min(1, { message: 'Tanggal wajib diisi' }),
-  kodeBahanBakuKedua: z.string().min(1, { message: 'Kode Bahan Baku wajib diisi' }),
+  stokMasuk: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0, { message: 'Stok Masuk harus angka positif.' })
+  ),
+  stokKeluar: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0, { message: 'Stok Keluar harus angka positif.' })
+  ),
+  unit: z.string().min(1, { message: 'Unit wajib diisi' }),
 });
 
 type IngredientFormValues = z.infer<typeof formSchema>;
@@ -51,8 +65,9 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       kodeBahanBaku: '',
       namaBarang: '',
       supplier: '',
-      tanggal: '',
-      kodeBahanBakuKedua: '',
+      stokMasuk: 0,
+      stokKeluar: 0,
+      unit: '',
     },
   });
 
@@ -62,14 +77,13 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const newStockItem: Omit<StockItem, 'id'> = {
+      const newStockItem: Omit<StockItem, 'id' | 'status' | 'statusColor'> = {
         kodeBahanBaku: values.namaBarang, // Using namaBarang as the main kodeBahanBaku for display
-        kodeBahanBaku2: values.kodeBahanBakuKedua,
+        kodeBahanBaku2: values.kodeBahanBaku, // Assuming kodeBahanBaku is the second code
         supplier: values.supplier,
-        stokMasuk: '0 Unit', // Default value, can be expanded later
-        stokKeluar: '0 Unit', // Default value, can be expanded later
-        status: 'Baru', // Default status
-        statusColor: 'green', // Default color
+        stokMasuk: values.stokMasuk,
+        stokKeluar: values.stokKeluar,
+        unit: values.unit,
       };
 
       addStockItem(newStockItem); // Add to global stock state
@@ -152,16 +166,12 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             />
             <FormField
               control={form.control}
-              name="tanggal"
+              name="stokMasuk"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tanggal</FormLabel>
+                  <FormLabel>Stok Masuk</FormLabel>
                   <FormControl>
-                    <Input
-                      type="date"
-                      placeholder="Masukkan tanggal"
-                      {...field}
-                    />
+                    <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,16 +179,35 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             />
             <FormField
               control={form.control}
-              name="kodeBahanBakuKedua"
+              name="stokKeluar"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kode Bahan Baku</FormLabel>
+                  <FormLabel>Stok Keluar</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Masukkan kode bahan baku"
-                      {...field}
-                    />
+                    <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="unit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Unit</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih unit" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Kg">Kg</SelectItem>
+                      <SelectItem value="Liter">Liter</SelectItem>
+                      <SelectItem value="Pcs">Pcs</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
