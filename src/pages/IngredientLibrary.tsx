@@ -21,26 +21,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'; // Import Sheet components
 import { useIsMobile } from '../hooks/use-mobile';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
 import { useStock, StockItem } from '../context/StockContext'; // Import useStock and StockItem
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BellRing } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast'; // Import useToast
 
 const IngredientLibrary = () => {
   const isMobile = useIsMobile();
-  const { stockItems, getLowStockItems } = useStock(); // Use stockItems and getLowStockItems from context
+  const { stockItems, getLowStockItems, addStockItem } = useStock(); // Use stockItems, getLowStockItems, and addStockItem from context
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<StockItem | null>(null);
-  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer
+  // const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer - no longer needed with Sheet
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua'); // Keep for future filtering if categories are added
   const [inStockFilter, setInStockFilter] = useState<string>('Semua'); // Keep for future filtering
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const { toast } = useToast(); // Initialize useToast
 
   const lowStockItems = useMemo(() => getLowStockItems(10), [stockItems, getLowStockItems]); // Threshold of 10 for low stock
 
@@ -78,10 +76,36 @@ const IngredientLibrary = () => {
     const file = event.target.files?.[0];
     if (file) {
       importFromXLSX(file, (importedData) => {
-        // Assuming the imported data matches the StockItem interface structure
-        // This part needs to be handled carefully as `addStockItem` expects Omit<StockItem, 'id'>
-        // For now, we'll just log it. A proper implementation would iterate and add each item.
-        console.log('Imported data:', importedData);
+        if (Array.isArray(importedData)) {
+          let importedCount = 0;
+          importedData.forEach((item: any) => {
+            // Ensure the imported item has the required fields for addStockItem
+            if (item.kodeBahanBaku && item.kodeBahanBaku2 && item.supplier && item.stokMasuk !== undefined && item.stokKeluar !== undefined && item.unit) {
+              addStockItem({
+                kodeBahanBaku: item.kodeBahanBaku,
+                kodeBahanBaku2: item.kodeBahanBaku2,
+                supplier: item.supplier,
+                stokMasuk: item.stokMasuk,
+                stokKeluar: item.stokKeluar,
+                unit: item.unit,
+              });
+              importedCount++;
+            } else {
+              console.warn('Skipping malformed imported item:', item);
+            }
+          });
+          toast({
+            title: "Import Berhasil",
+            description: `${importedCount} bahan baku berhasil diimpor.`,
+          });
+        } else {
+          console.error('Imported data is not an array:', importedData);
+          toast({
+            title: "Import Gagal",
+            description: "Format file tidak sesuai.",
+            variant: "destructive",
+          });
+        }
       });
     }
   };
@@ -89,16 +113,16 @@ const IngredientLibrary = () => {
   return (
     <div className="min-h-screen bg-white flex font-sans text-[#313131]">
       {isMobile ? (
-        <Drawer open={isSidebarDrawerOpen} onOpenChange={setIsSidebarDrawerOpen} direction="left">
-          <DrawerTrigger asChild>
+        <Sheet>
+          <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
               <Menu className="h-6 w-6" />
             </Button>
-          </DrawerTrigger>
-          <DrawerContent className="w-[260px] h-full mt-0 rounded-none">
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[260px]">
             <Sidebar />
-          </DrawerContent>
-        </Drawer>
+          </SheetContent>
+        </Sheet>
       ) : (
         <Sidebar />
       )}
@@ -194,7 +218,6 @@ const IngredientLibrary = () => {
                   <tr className="border-b border-black/5">
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Nama</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Kode Bahan Baku</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Kode Bahan Baku 2</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Pemasok</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Masuk</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Keluar</th>
@@ -220,7 +243,6 @@ const IngredientLibrary = () => {
                         </a>
                       </td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td>
-                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.kodeBahanBaku2}</td> {/* Displaying kodeBahanBaku2 again, adjust if needed */}
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.supplier}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokMasuk}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokKeluar}</td>

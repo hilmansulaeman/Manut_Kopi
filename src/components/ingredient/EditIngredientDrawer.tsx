@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from '@/components/ui/drawer';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -82,34 +83,33 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
   };
 
   return (
-    <Drawer open={open} onOpenChange={onClose}>
-      <DrawerContent className="h-[90%] mt-0 rounded-t-[10px] flex flex-col">
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Edit Bahan Baku</DrawerTitle>
-          <DrawerDescription>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Bahan Baku</DialogTitle>
+          <DialogDescription>
             Perbarui detail bahan baku. Klik simpan setelah selesai.
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="p-4 flex-1 overflow-y-auto">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="kodeBahanBaku"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kode Bahan Baku</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Contoh: Kopi Arabika" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kodeBahanBaku2"
-                render={({ field }) => (
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+            <FormField
+              control={form.control}
+              name="kodeBahanBaku"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kode Bahan Baku</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Contoh: Kopi Arabika" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="kodeBahanBaku2"
+              render={({ field }) => (
                   <FormItem>
                     <FormLabel>Kode Bahan Baku 2</FormLabel>
                     <FormControl>
@@ -158,14 +158,11 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-[#313131] text-white hover:bg-[#313131]/90">
-                Simpan Perubahan
-              </Button>
             </form>
           </Form>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </DialogContent>
+       
+    </Dialog>
   );
 };
 
