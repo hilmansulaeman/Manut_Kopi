@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { StatCard } from './StatCard';
-import { YearlyChart } from './YearlyChart';
 import { StockTable } from './StockTable';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { Button } from '../ui/button';
@@ -127,11 +126,6 @@ export const Dashboard = () => {
                 icon={card.icon}
               />
             ))}
-          </div>
-          
-          {/* Chart Section */}
-          <div className="mb-8">
-            <YearlyChart />
           </div>
           
           {/* Table Section */}
