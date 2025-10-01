@@ -41,11 +41,10 @@ const menuItems: MenuItem[] = [
 export const Sidebar = ({ className = '' }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profileName } = useProfile(); // Use profileName from context
+  const { profileName, logout } = useProfile(); // Use profileName and logout from context
 
   const handleLogout = () => {
-    // Perform any cleanup here, e.g., clearing local storage, auth tokens
-    console.log('Logging out...');
+    logout(); // Call the logout function from ProfileContext
     navigate('/login');
   };
 

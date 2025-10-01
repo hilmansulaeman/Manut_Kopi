@@ -44,6 +44,10 @@ const formSchema = z.object({
     (val) => Number(val),
     z.number().min(0, { message: 'Stok Keluar harus angka positif.' })
   ),
+  stockLimit: z.preprocess( // Add stockLimit to schema
+    (val) => Number(val),
+    z.number().min(0, { message: 'Batas Stok harus angka positif.' })
+  ),
   unit: z.string().min(1, { message: 'Unit wajib diisi' }),
 });
 
@@ -67,6 +71,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       supplier: '',
       stokMasuk: 0,
       stokKeluar: 0,
+      stockLimit: 0, // Add default value for stockLimit
       unit: '',
     },
   });
@@ -78,15 +83,16 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const newStockItem: Omit<StockItem, 'id' | 'status' | 'statusColor'> = {
-        kodeBahanBaku: values.namaBarang, // Using namaBarang as the main kodeBahanBaku for display
-        kodeBahanBaku2: values.kodeBahanBaku, // Assuming kodeBahanBaku is the second code
+        kodeBahanBaku: values.namaBarang,
+        kodeBahanBaku2: values.kodeBahanBaku,
         supplier: values.supplier,
         stokMasuk: values.stokMasuk,
         stokKeluar: values.stokKeluar,
+        stockLimit: values.stockLimit, // Include stockLimit
         unit: values.unit,
       };
 
-      addStockItem(newStockItem); // Add to global stock state
+      addStockItem(newStockItem);
       toast({
         title: 'Berhasil!',
         description: 'Bahan baku berhasil ditambahkan ke stok.',
@@ -183,6 +189,19 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Stok Keluar</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stockLimit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Batas Stok</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
                   </FormControl>

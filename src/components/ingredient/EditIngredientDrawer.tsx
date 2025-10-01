@@ -33,8 +33,18 @@ const formSchema = z.object({
   kodeBahanBaku: z.string().min(1, { message: 'Kode Bahan Baku harus diisi.' }),
   kodeBahanBaku2: z.string().min(1, { message: 'Kode Bahan Baku 2 harus diisi.' }),
   supplier: z.string().min(1, { message: 'Pemasok harus diisi.' }),
-  stokMasuk: z.number().min(0, { message: 'Stok Masuk harus angka positif.' }),
-  stokKeluar: z.number().min(0, { message: 'Stok Keluar harus angka positif.' }),
+  stokMasuk: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0, { message: 'Stok Masuk harus angka positif.' })
+  ),
+  stokKeluar: z.preprocess(
+    (val) => Number(val),
+    z.number().min(0, { message: 'Stok Keluar harus angka positif.' })
+  ),
+  stockLimit: z.preprocess( // Add stockLimit to schema
+    (val) => Number(val),
+    z.number().min(0, { message: 'Batas Stok harus angka positif.' })
+  ),
 });
 
 const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClose, ingredient }) => {
@@ -49,6 +59,7 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
       supplier: '',
       stokMasuk: 0,
       stokKeluar: 0,
+      stockLimit: 0, // Add default value for stockLimit
     },
   });
 
@@ -60,6 +71,7 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
         supplier: ingredient.supplier,
         stokMasuk: ingredient.stokMasuk,
         stokKeluar: ingredient.stokKeluar,
+        stockLimit: ingredient.stockLimit, // Populate stockLimit
       });
     }
   }, [ingredient, form]);
@@ -70,8 +82,8 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
     const updatedItem: StockItem = {
       ...ingredient,
       ...values,
-      status: (values.stokMasuk - values.stokKeluar) > 0 ? 'Tersedia' : 'Habis Stok',
-      statusColor: (values.stokMasuk - values.stokKeluar) > 0 ? 'green' : 'orange',
+      stockLimit: values.stockLimit, // Include stockLimit
+      // Status and statusColor will be calculated by StockContext's updateStockItem
     };
 
     updateStockItem(updatedItem);
@@ -152,12 +164,33 @@ const EditIngredientDrawer: React.FC<EditIngredientDrawerProps> = ({ open, onClo
                   <FormItem>
                     <FormLabel>Stok Keluar</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stockLimit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Batas Stok</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <DialogFooter>
+                <Button variant="outline" onClick={onClose}>
+                  Batal
+                </Button>
+                <Button type="submit">
+                  Simpan perubahan
+                </Button>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>

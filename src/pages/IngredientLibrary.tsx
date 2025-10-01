@@ -17,7 +17,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -34,17 +36,16 @@ const IngredientLibrary = () => {
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<StockItem | null>(null);
-  // const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false); // State for sidebar drawer - no longer needed with Sheet
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua'); // Keep for future filtering if categories are added
-  const [inStockFilter, setInStockFilter] = useState<string>('Semua'); // Keep for future filtering
+  const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
+  const [inStockFilter, setInStockFilter] = useState<string>('Semua');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const { toast } = useToast(); // Initialize useToast
+  const { toast } = useToast();
 
-  const lowStockItems = useMemo(() => getLowStockItems(10), [stockItems, getLowStockItems]); // Threshold of 10 for low stock
+  const lowStockItems = useMemo(() => getLowStockItems(), [stockItems, getLowStockItems]); // No longer needs a threshold parameter
 
   const uniqueCategories = useMemo(() => {
     const categories = new Set<string>();
-    stockItems.forEach(item => categories.add(item.kodeBahanBaku)); // Using kodeBahanBaku as category for now
+    stockItems.forEach(item => categories.add(item.kodeBahanBaku));
     return ['Semua', ...Array.from(categories)];
   }, [stockItems]);
 
@@ -55,16 +56,16 @@ const IngredientLibrary = () => {
 
   const inStockOptions = [
     { value: 'Semua', label: 'Semua Stok' },
-    { value: 'In Stock', label: 'Tersedia' },
-    { value: 'Out of Stock', label: 'Habis Stok' },
+    { value: 'Tersedia', label: 'Tersedia' },
+    { value: 'Habis Stok', label: 'Habis Stok' },
   ];
 
   const filteredIngredients = useMemo(() => {
     return stockItems.filter(item => {
       const matchesCategory = selectedCategory === 'Semua' || item.kodeBahanBaku === selectedCategory;
       const matchesInStock = inStockFilter === 'Semua' || 
-                             (inStockFilter === 'In Stock' && item.statusColor === 'green') || // Assuming green means 'In Stock'
-                             (inStockFilter === 'Out of Stock' && item.statusColor === 'orange'); // Assuming orange means 'Out of Stock'
+                             (inStockFilter === 'Tersedia' && item.statusColor === 'green') ||
+                             (inStockFilter === 'Habis Stok' && item.statusColor === 'orange');
       const matchesSearch = item.kodeBahanBaku.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             item.kodeBahanBaku2.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
@@ -80,13 +81,14 @@ const IngredientLibrary = () => {
           let importedCount = 0;
           importedData.forEach((item: any) => {
             // Ensure the imported item has the required fields for addStockItem
-            if (item.kodeBahanBaku && item.kodeBahanBaku2 && item.supplier && item.stokMasuk !== undefined && item.stokKeluar !== undefined && item.unit) {
+            if (item.kodeBahanBaku && item.kodeBahanBaku2 && item.supplier && item.stokMasuk !== undefined && item.stokKeluar !== undefined && item.unit && item.stockLimit !== undefined) {
               addStockItem({
                 kodeBahanBaku: item.kodeBahanBaku,
                 kodeBahanBaku2: item.kodeBahanBaku2,
                 supplier: item.supplier,
                 stokMasuk: item.stokMasuk,
                 stokKeluar: item.stokKeluar,
+                stockLimit: item.stockLimit, // Add stockLimit
                 unit: item.unit,
               });
               importedCount++;
@@ -173,15 +175,18 @@ const IngredientLibrary = () => {
           {/* Filters */}
           <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px] bg-white">
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
-              <SelectContent>
-                {categoryOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+              <SelectContent className="bg-white">
+                <SelectGroup>
+                  <SelectLabel>Kategori</SelectLabel>
+                  {categoryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
 
@@ -190,11 +195,14 @@ const IngredientLibrary = () => {
                 <SelectValue placeholder="Pilih Status Stok" />
               </SelectTrigger>
               <SelectContent>
-                {inStockOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  <SelectLabel>Status Stok</SelectLabel>
+                  {inStockOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
 
@@ -203,7 +211,7 @@ const IngredientLibrary = () => {
               <Input
                 type="text"
                 placeholder="Cari produk"
-                className="w-full bg-white/80 backdrop-blur-sm border border-black/5 rounded-lg pl-10 pr-4 py-2 text-sm text-[#313131] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
+                className="w-full bg-white border border-black/5 rounded-lg pl-10 pr-4 py-2 text-sm text-[#313131] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -211,7 +219,7 @@ const IngredientLibrary = () => {
           </div>
           
           {/* Table */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-black/5 p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-[1px]">
+          <div className="bg-white rounded-2xl border border-black/5 p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-[1px]">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -221,6 +229,7 @@ const IngredientLibrary = () => {
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Pemasok</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Masuk</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Stok Keluar</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Batas Stok</th> {/* New column for Stock Limit */}
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Unit</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-[#313131]/70">Status</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-[#313131]/70">Aksi</th>
@@ -246,6 +255,7 @@ const IngredientLibrary = () => {
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.supplier}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokMasuk}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stokKeluar}</td>
+                      <td className="py-3 px-4 text-sm text-[#313131]/70">{item.stockLimit}</td> {/* Display Stock Limit */}
                       <td className="py-3 px-4 text-sm text-[#313131]/70">{item.unit}</td>
                       <td className="py-3 px-4 text-sm text-[#313131]/70">
                         <Badge className={`${item.statusColor === 'orange' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
