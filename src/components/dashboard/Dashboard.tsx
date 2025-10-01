@@ -47,8 +47,8 @@ export const Dashboard = () => {
   const totalStockOut = stockItems.reduce((sum, item) => sum + item.stokKeluar, 0);
   const currentTotalStock = totalStockIn - totalStockOut;
 
-  const lowStockCount = getLowStockItems(10).length; // Using a threshold of 10
-  const outOfStockCount = getLowStockItems(0).length; // Using a threshold of 0 for out of stock
+  const lowStockCount = getLowStockItems().length;
+  const outOfStockCount = stockItems.filter(item => (item.stokMasuk - item.stokKeluar) <= 0).length;
 
   let overallStockStatus = 'Aman';
   let overallStockStatusColor: 'green' | 'orange' | 'red' = 'green';

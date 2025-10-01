@@ -13,8 +13,11 @@ const IngredientDetail = () => {
   const [ingredient, setIngredient] = useState<StockItem | null>(null);
 
   useEffect(() => {
+    console.log('IngredientDetail - id from useParams:', id);
+    console.log('IngredientDetail - stockItems:', stockItems);
     if (id) {
       const foundIngredient = stockItems.find(item => item.id === parseInt(id));
+      console.log('IngredientDetail - foundIngredient:', foundIngredient);
       setIngredient(foundIngredient || null);
     }
   }, [id, stockItems]);

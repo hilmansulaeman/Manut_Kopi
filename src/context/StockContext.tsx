@@ -83,6 +83,18 @@ const initialStockData: StockItem[] = [
     statusColor: 'orange',
     unit: 'Pcs',
   },
+  {
+    id: 6,
+    kodeBahanBaku: 'Tepung Terigu',
+    kodeBahanBaku2: 'TPT006',
+    supplier: 'Gandum Jaya',
+    stokMasuk: 80,
+    stokKeluar: 30,
+    stockLimit: 20,
+    status: '50 Kg',
+    statusColor: 'green',
+    unit: 'Kg',
+  },
 ];
 
 export const StockProvider = ({ children }: { children: ReactNode }) => {
