@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm, FieldValues } from 'react-hook-form@7.55.0';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
@@ -9,11 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+} from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { useToast } from '../ui/use-toast';
 import {
   Form,
   FormControl,
@@ -21,15 +20,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useStock, StockItem } from '../../context/StockContext'; // Import useStock and StockItem
+} from '../ui/form';
+import { useStock, StockItem } from '../../context/StockContext';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../ui/select';
 
 // Zod schema for form validation
 const formSchema = z.object({
@@ -40,11 +39,7 @@ const formSchema = z.object({
     (val) => Number(val),
     z.number().min(0, { message: 'Stok Masuk harus angka positif.' })
   ),
-  stokKeluar: z.preprocess(
-    (val) => Number(val),
-    z.number().min(0, { message: 'Stok Keluar harus angka positif.' })
-  ),
-  stockLimit: z.preprocess( // Add stockLimit to schema
+  stockLimit: z.preprocess(
     (val) => Number(val),
     z.number().min(0, { message: 'Batas Stok harus angka positif.' })
   ),
@@ -60,7 +55,7 @@ interface CreateIngredientDrawerProps {
 
 export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ open, onClose }) => {
   const { toast } = useToast();
-  const { addStockItem } = useStock(); // Use addStockItem from context
+  const { addStockItem } = useStock();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<IngredientFormValues>({
@@ -70,8 +65,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       namaBarang: '',
       supplier: '',
       stokMasuk: 0,
-      stokKeluar: 0,
-      stockLimit: 0, // Add default value for stockLimit
+      stockLimit: 0,
       unit: '',
     },
   });
@@ -82,13 +76,12 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const newStockItem: Omit<StockItem, 'id' | 'status' | 'statusColor'> = {
+      const newStockItem: Omit<StockItem, 'id' | 'status' | 'statusColor' | 'currentStock'> = {
         kodeBahanBaku: values.namaBarang,
         kodeBahanBaku2: values.kodeBahanBaku,
         supplier: values.supplier,
         stokMasuk: values.stokMasuk,
-        stokKeluar: values.stokKeluar,
-        stockLimit: values.stockLimit, // Include stockLimit
+        stockLimit: values.stockLimit,
         unit: values.unit,
       };
 
@@ -125,7 +118,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             <FormField
               control={form.control}
               name="kodeBahanBaku"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Kode Bahan Baku</FormLabel>
                   <FormControl>
@@ -141,7 +134,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             <FormField
               control={form.control}
               name="namaBarang"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Nama Barang</FormLabel>
                   <FormControl>
@@ -157,7 +150,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             <FormField
               control={form.control}
               name="supplier"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Pemasok</FormLabel>
                   <FormControl>
@@ -173,7 +166,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             <FormField
               control={form.control}
               name="stokMasuk"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Stok Masuk</FormLabel>
                   <FormControl>
@@ -185,21 +178,8 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             />
             <FormField
               control={form.control}
-              name="stokKeluar"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Stok Keluar</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="stockLimit"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Batas Stok</FormLabel>
                   <FormControl>
@@ -212,7 +192,7 @@ export const CreateIngredientDrawer: React.FC<CreateIngredientDrawerProps> = ({ 
             <FormField
               control={form.control}
               name="unit"
-              render={({ field }) => (
+              render={({ field }: { field: FieldValues }) => (
                 <FormItem>
                   <FormLabel>Unit</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
