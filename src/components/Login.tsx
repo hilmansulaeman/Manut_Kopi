@@ -1,9 +1,9 @@
 import svgPaths from "../imports/svg-wxmlgp8w5a";
-import imgLogoManutRemovebgPreview1 from "figma:asset/bd90131d35a2fe406ed9c0ac7fb4724cb52f7427.png";
-import { Button } from "./ui/button";
+import imgLogoManutRemovebgPreview1 from "../assets/bd90131d35a2fe406ed9c0ac7fb4724cb52f7427.png";
+import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useState } from "react";
+import { Button } from "./ui/button"; // Re-import the custom Button
 
 function BackgroundGraphics() {
   return (
@@ -84,16 +84,33 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
-    
-    // Validasi kredensial
-    if (email === "admin@gmail.com" && password === "admin123") {
-      setError("");
-      onLogin();
-    } else {
-      setError("Email atau password salah!");
+    setError(""); // Clear previous errors
+    console.log('Attempting login with:', { email, password });
+
+    try {
+      const response = await fetch('/api/auth/login', { // Changed to relative path for proxy
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log('Login API response status:', response.status);
+      console.log('Login API response data:', data);
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token); // Store the JWT token
+        onLogin();
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      setError('Failed to connect to the server. Please try again later.');
+      console.error('Login error:', err);
     }
   };
 

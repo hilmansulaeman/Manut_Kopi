@@ -1,0 +1,4702 @@
+openapi: 3.0.0
+info:
+  title: Kopi Haus Dashboard API
+  version: 1.0.0
+  description: API documentation for the Kopi Haus Dashboard backend application.
+
+servers:
+  - url: http://localhost:5001/api
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserRegister:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - roles
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [Cashier, Warehouse, Admin, Manager]
+          example: [Cashier]
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User registered successfully
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Server error
+    
+    Outlet:
+      type: object
+      required:
+        - name
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c1
+        name:
+          type: string
+          example: Main Branch
+        address:
+          type: string
+          example: 123 Coffee St, City
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Category:
+      type: object
+      required:
+        - name
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c2
+        name:
+          type: string
+          example: Coffee
+        parent_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c3
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Register:
+      type: object
+      required:
+        - outlet_id
+        - name
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c4
+        outlet_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c1
+        name:
+          type: string
+          example: Main Register
+        status:
+          type: string
+          enum: [idle, open, closed]
+          example: idle
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Tax:
+      type: object
+      required:
+        - name
+        - rate_percent
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c5
+        name:
+          type: string
+          example: VAT
+        rate_percent:
+          type: number
+          format: float
+          example: 10.0
+        inclusive:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Product:
+      type: object
+      required:
+        - sku
+        - name
+        - price
+        - cost
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c6
+        sku:
+          type: string
+          example: P001
+        name:
+          type: string
+          example: Espresso
+        category_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c2
+        unit:
+          type: string
+          example: cup
+        price:
+          type: number
+          format: float
+          example: 25000
+        cost:
+          type: number
+          format: float
+          example: 10000
+        tax_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c5
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Supplier:
+      type: object
+      required:
+        - name
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c7
+        name:
+          type: string
+          example: Coffee Bean Supplier
+        phone:
+          type: string
+          example: "+628123456789"
+        email:
+          type: string
+          format: email
+          example: supplier@example.com
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    ProductPrice:
+      type: object
+      required:
+        - product_id
+        - outlet_id
+        - price
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c8
+        product_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c6
+        outlet_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c1
+        price:
+          type: number
+          format: float
+          example: 27500
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    ProductStock:
+      type: object
+      required:
+        - product_id
+        - outlet_id
+        - qty_on_hand
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c9
+        product_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c6
+        outlet_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c1
+        qty_on_hand:
+          type: number
+          format: integer
+          example: 100
+        min_stock:
+          type: number
+          format: integer
+          example: 10
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Customer:
+      type: object
+      required:
+        - name
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c10
+        name:
+          type: string
+          example: Jane Doe
+        phone:
+          type: string
+          example: "+6281211223344"
+        email:
+          type: string
+          format: email
+          example: jane.doe@example.com
+        member_code:
+          type: string
+          nullable: true
+          example: CUST001
+        points:
+          type: number
+          format: integer
+          example: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+    
+    PaymentMethod:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c11
+        name:
+          type: string
+          example: Credit Card
+        type:
+          type: string
+          enum: [cash, card, ewallet, other]
+          example: card
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Shift:
+      type: object
+      required:
+        - register_id
+        - opened_by
+        - opened_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c12
+        register_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c4
+        opened_by:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c13
+        closed_by:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c14
+        opened_at:
+          type: string
+          format: date-time
+          example: '2023-10-26T10:00:00.000Z'
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2023-10-26T18:00:00.000Z'
+        opening_cash:
+          type: number
+          format: float
+          example: 1000000
+        closing_cash:
+          type: number
+          format: float
+          nullable: true
+          example: 2500000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Purchase:
+      type: object
+      required:
+        - outlet_id
+        - purchased_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c15
+        supplier_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c7
+        outlet_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c1
+        invoice_no:
+          type: string
+          example: INV-20231026-001
+        purchased_at:
+          type: string
+          format: date-time
+          example: '2023-10-26T10:00:00.000Z'
+        status:
+          type: string
+          enum: [pending, completed, cancelled]
+          example: completed
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    PurchaseItem:
+      type: object
+      required:
+        - purchase_id
+        - product_id
+        - qty
+        - cost
+        - subtotal
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c16
+        purchase_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c15
+        product_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c6
+        qty:
+          type: number
+          format: integer
+          example: 5
+        cost:
+          type: number
+          format: float
+          example: 10000
+        discount_amount:
+          type: number
+          format: float
+          example: 0
+        tax_amount:
+          type: number
+          format: float
+          example: 500
+        subtotal:
+          type: number
+          format: float
+          example: 50000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Sale:
+      type: object
+      required:
+        - outlet_id
+        - register_id
+        - shift_id
+        - cashier_id
+        - sold_at
+        - total
+        - grand_total
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c17
+        outlet_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c1
+        register_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c4
+        shift_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c12
+        cashier_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c13
+        customer_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c10
+        invoice_no:
+          type: string
+          example: SALE-20231026-001
+        sold_at:
+          type: string
+          format: date-time
+          example: '2023-10-26T10:00:00.000Z'
+        status:
+          type: string
+          enum: [pending, completed, cancelled, voided]
+          example: completed
+        total:
+          type: number
+          format: float
+          example: 100000
+        discount_total:
+          type: number
+          format: float
+          example: 10000
+        tax_total:
+          type: number
+          format: float
+          example: 9000
+        grand_total:
+          type: number
+          format: float
+          example: 99000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    SaleItem:
+      type: object
+      required:
+        - sale_id
+        - product_id
+        - qty
+        - price
+        - subtotal
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c18
+        sale_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c17
+        product_id:
+          type: string
+          example: 60d5ec49f8c7a40015a7b8c6
+        qty:
+          type: number
+          format: integer
+          example: 2
+        price:
+          type: number
+          format: float
+          example: 25000
+        discount_amount:
+          type: number
+          format: float
+          example: 0
+        tax_amount:
+          type: number
+          format: float
+          example: 5000
+        subtotal:
+          type: number
+          format: float
+          example: 50000
+        applied_tax_rate:
+          type: number
+          format: float
+          nullable: true
+          example: 10.0
+        tax_inclusive:
+          type: boolean
+          example: false
+        unit_price_before_discount:
+          type: number
+          format: float
+          nullable: true
+          example: 25000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:00:00.000Z'
+
+    Payment:
+      type: object
+      required:
+        - sale_id
+        - method_id
+        - paid_amount
+        - paid_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c19
+        sale_id:
+          type: string
+          description: ID of the associated sale
+          example: 60d5ec49f8c7a40015a7b8c17
+        method_id:
+          type: string
+          description: ID of the payment method used
+          example: 60d5ec49f8c7a40015a7b8c11
+        paid_amount:
+          type: number
+          format: float
+          description: The amount paid by the customer
+          example: 100000
+        change_amount:
+          type: number
+          format: float
+          description: The change given to the customer (if any)
+          example: 1000
+        paid_at:
+          type: string
+          format: date-time
+          description: Timestamp when the payment was made
+          example: '2023-10-26T10:05:00.000Z'
+        reference_no:
+          type: string
+          description: Optional reference number for the payment (e.g., transaction ID)
+          example: REF-12345
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:05:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T10:05:00.000Z'
+
+    Return:
+      type: object
+      required:
+        - type
+        - outlet_id
+        - processed_by
+        - returned_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c20
+        type:
+          type: string
+          enum: [sales, purchase]
+          description: Type of return (sales or purchase)
+          example: sales
+        ref_sale_id:
+          type: string
+          nullable: true
+          description: Reference to the Sale ID if type is 'sales'
+          example: 60d5ec49f8c7a40015a7b8c17
+        ref_purchase_id:
+          type: string
+          nullable: true
+          description: Reference to the Purchase ID if type is 'purchase'
+          example: 60d5ec49f8c7a40015a7b8c15
+        outlet_id:
+          type: string
+          description: ID of the outlet where the return was processed
+          example: 60d5ec49f8c7a40015a7b8c1
+        processed_by:
+          type: string
+          description: ID of the user who processed the return
+          example: 60d5ec49f8c7a40015a7b8c13
+        returned_at:
+          type: string
+          format: date-time
+          description: Timestamp when the return was processed
+          example: '2023-10-26T11:00:00.000Z'
+        reason:
+          type: string
+          nullable: true
+          description: Reason for the return
+          example: Damaged item
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T11:00:00.000Z'
+
+    ReturnItem:
+      type: object
+      required:
+        - return_id
+        - product_id
+        - qty
+        - amount
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c21
+        return_id:
+          type: string
+          description: ID of the associated return
+          example: 60d5ec49f8c7a40015a7b8c20
+        product_id:
+          type: string
+          description: ID of the returned product
+          example: 60d5ec49f8c7a40015a7b8c6
+        qty:
+          type: number
+          format: integer
+          description: Quantity of the product returned
+          example: 1
+        amount:
+          type: number
+          format: float
+          description: Amount of the returned product (price per unit)
+          example: 25000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T11:00:00.000Z'
+
+    StockAdjustment:
+      type: object
+      required:
+        - outlet_id
+        - adjusted_by
+        - adjusted_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c22
+        outlet_id:
+          type: string
+          description: ID of the outlet where the stock adjustment was made
+          example: 60d5ec49f8c7a40015a7b8c1
+        adjusted_by:
+          type: string
+          description: ID of the user who made the stock adjustment
+          example: 60d5ec49f8c7a40015a7b8c13
+        adjusted_at:
+          type: string
+          format: date-time
+          description: Timestamp when the stock adjustment was made
+          example: '2023-10-26T12:00:00.000Z'
+        reason:
+          type: string
+          nullable: true
+          description: Reason for the stock adjustment
+          example: Inventory count discrepancy
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T12:00:00.000Z'
+
+    StockAdjustmentItem:
+      type: object
+      required:
+        - stock_adjustment_id
+        - product_id
+        - delta_qty
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c23
+        stock_adjustment_id:
+          type: string
+          description: ID of the associated stock adjustment
+          example: 60d5ec49f8c7a40015a7b8c22
+        product_id:
+          type: string
+          description: ID of the product being adjusted
+          example: 60d5ec49f8c7a40015a7b8c6
+        delta_qty:
+          type: number
+          format: integer
+          description: Change in quantity (positive for increase, negative for decrease)
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T12:00:00.000Z'
+
+    StockMovement:
+      type: object
+      required:
+        - product_id
+        - outlet_id
+        - source_type
+        - source_id
+        - balance_after
+        - moved_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c24
+        product_id:
+          type: string
+          description: ID of the product involved in the movement
+          example: 60d5ec49f8c7a40015a7b8c6
+        outlet_id:
+          type: string
+          description: ID of the outlet where the movement occurred
+          example: 60d5ec49f8c7a40015a7b8c1
+        source_type:
+          type: string
+          enum: [purchase, sale, return_sales, return_purchase, stock_adjustment, stock_adjustment_revert, return_sales_delete_revert, return_purchase_delete_revert]
+          description: Type of event that caused the stock movement
+          example: purchase
+        source_id:
+          type: string
+          description: ID of the related document (e.g., Purchase, Sale, Return, StockAdjustment)
+          example: 60d5ec49f8c7a40015a7b8c15
+        qty_in:
+          type: number
+          format: integer
+          description: Quantity moved into stock
+          example: 5
+        qty_out:
+          type: number
+          format: integer
+          description: Quantity moved out of stock
+          example: 0
+        balance_after:
+          type: number
+          format: integer
+          description: Stock quantity after the movement
+          example: 105
+        moved_at:
+          type: string
+          format: date-time
+          description: Timestamp of the stock movement
+          example: '2023-10-26T13:00:00.000Z'
+
+    Promotion:
+      type: object
+      required:
+        - name
+        - type
+        - start_at
+        - end_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c25
+        name:
+          type: string
+          description: Name of the promotion
+          example: Weekend Sale
+        type:
+          type: string
+          enum: [percentage_off, amount_off, buy_x_get_y]
+          description: Type of promotion
+          example: percentage_off
+        start_at:
+          type: string
+          format: date-time
+          description: Start date and time of the promotion
+          example: '2023-10-27T00:00:00.000Z'
+        end_at:
+          type: string
+          format: date-time
+          description: End date and time of the promotion
+          example: '2023-10-29T23:59:59.000Z'
+        is_active:
+          type: boolean
+          description: Whether the promotion is currently active
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T14:00:00.000Z'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T14:00:00.000Z'
+
+    PromotionRule:
+      type: object
+      required:
+        - promotion_id
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c26
+        promotion_id:
+          type: string
+          description: ID of the associated promotion
+          example: 60d5ec49f8c7a40015a7b8c25
+        product_id:
+          type: string
+          nullable: true
+          description: ID of the product this rule applies to (null for all products)
+          example: 60d5ec49f8c7a40015a7b8c6
+        min_qty:
+          type: number
+          format: integer
+          description: Minimum quantity required for the rule to apply
+          example: 2
+        percent_off:
+          type: number
+          format: float
+          description: Percentage discount (0-100)
+          example: 10
+        amount_off:
+          type: number
+          format: float
+          description: Fixed amount discount
+          example: 5000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T14:00:00.000Z'
+
+    Expense:
+      type: object
+      required:
+        - outlet_id
+        - category
+        - amount
+        - noted_by
+        - spent_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c27
+        outlet_id:
+          type: string
+          description: ID of the outlet where the expense was incurred
+          example: 60d5ec49f8c7a40015a7b8c1
+        shift_id:
+          type: string
+          nullable: true
+          description: ID of the shift during which the expense was incurred (if any)
+          example: 60d5ec49f8c7a40015a7b8c12
+        category:
+          type: string
+          description: Category of the expense (e.g., Utilities, Rent, Supplies)
+          example: Supplies
+        amount:
+          type: number
+          format: float
+          description: Amount of the expense
+          example: 50000
+        noted_by:
+          type: string
+          description: ID of the user who noted the expense
+          example: 60d5ec49f8c7a40015a7b8c13
+        spent_at:
+          type: string
+          format: date-time
+          description: Timestamp when the expense was incurred
+          example: '2023-10-26T15:00:00.000Z'
+        note:
+          type: string
+          nullable: true
+          description: Additional notes about the expense
+          example: Purchase of cleaning supplies
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T15:00:00.000Z'
+
+paths:
+  /payments:
+    get:
+      summary: Get all payments
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new payment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sale_id
+                - method_id
+                - paid_amount
+                - paid_at
+              properties:
+                sale_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c17
+                method_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c11
+                paid_amount:
+                  type: number
+                  format: float
+                  example: 100000
+                change_amount:
+                  type: number
+                  format: float
+                  example: 1000
+                paid_at:
+                  type: string
+                  format: date-time
+                  example: '2023-10-26T10:05:00.000Z'
+                reference_no:
+                  type: string
+                  nullable: true
+                  example: REF-12345
+      responses:
+        '201':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Invalid input, sale ID, or payment method ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payments/{id}:
+    get:
+      summary: Get a payment by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment to retrieve
+      responses:
+        '200':
+          description: Payment data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a payment by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c11
+                paid_amount:
+                  type: number
+                  format: float
+                  example: 105000
+                change_amount:
+                  type: number
+                  format: float
+                  example: 6000
+                reference_no:
+                  type: string
+                  nullable: true
+                  example: REF-12345-UPD
+      responses:
+        '200':
+          description: Payment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Invalid input or payment method ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a payment by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment to delete
+      responses:
+        '200':
+          description: Payment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: User already exists or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/login:
+    post:
+      summary: Login user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Successful login, returns JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /outlets:
+    get:
+      summary: Get all outlets
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of outlets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Outlet'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new outlet
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: New Outlet Name
+                address:
+                  type: string
+                  example: New Outlet Address
+      responses:
+        '201':
+          description: Outlet created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outlet'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /outlets/{id}:
+    get:
+      summary: Get an outlet by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the outlet to retrieve
+      responses:
+        '200':
+          description: Outlet data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outlet'
+        '404':
+          description: Outlet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update an outlet by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the outlet to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Outlet Name
+                address:
+                  type: string
+                  example: Updated Outlet Address
+      responses:
+        '200':
+          description: Outlet updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outlet'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Outlet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an outlet by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the outlet to delete
+      responses:
+        '200':
+          description: Outlet deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Outlet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /categories:
+    get:
+      summary: Get all categories
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new category
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: New Category Name
+                parent_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c3
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input or category already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /categories/{id}:
+    get:
+      summary: Get a category by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the category to retrieve
+      responses:
+        '200':
+          description: Category data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a category by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the category to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Category Name
+                parent_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c3
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input or category already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a category by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the category to delete
+      responses:
+        '200':
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Cannot delete category with subcategories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /registers:
+    get:
+      summary: Get all registers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of registers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Register'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new register
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outlet_id
+                - name
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                name:
+                  type: string
+                  example: New Register Name
+                status:
+                  type: string
+                  enum: [idle, open, closed]
+                  example: idle
+      responses:
+        '201':
+          description: Register created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+        '400':
+          description: Invalid input or Outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /registers/{id}:
+    get:
+      summary: Get a register by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the register to retrieve
+      responses:
+        '200':
+          description: Register data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+        '404':
+          description: Register not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a register by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the register to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                name:
+                  type: string
+                  example: Updated Register Name
+                status:
+                  type: string
+                  enum: [idle, open, closed]
+                  example: open
+      responses:
+        '200':
+          description: Register updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+        '400':
+          description: Invalid input or Outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Register not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a register by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the register to delete
+      responses:
+        '200':
+          description: Register deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Register not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /taxes:
+    get:
+      summary: Get all taxes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of taxes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tax'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new tax
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - rate_percent
+              properties:
+                name:
+                  type: string
+                  example: Sales Tax
+                rate_percent:
+                  type: number
+                  format: float
+                  example: 5.0
+                inclusive:
+                  type: boolean
+                  example: false
+      responses:
+        '201':
+          description: Tax created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /taxes/{id}:
+    get:
+      summary: Get a tax by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the tax to retrieve
+      responses:
+        '200':
+          description: Tax data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '404':
+          description: Tax not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a tax by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the tax to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Sales Tax
+                rate_percent:
+                  type: number
+                  format: float
+                  example: 6.0
+                inclusive:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Tax updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tax'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tax not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a tax by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the tax to delete
+      responses:
+        '200':
+          description: Tax deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Tax not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /products:
+    get:
+      summary: Get all products
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new product
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sku
+                - name
+                - price
+                - cost
+              properties:
+                sku:
+                  type: string
+                  example: P002
+                name:
+                  type: string
+                  example: Latte
+                category_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c2
+                unit:
+                  type: string
+                  example: cup
+                price:
+                  type: number
+                  format: float
+                  example: 30000
+                cost:
+                  type: number
+                  format: float
+                  example: 12000
+                tax_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c5
+                is_active:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid input, category ID, or tax ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /products/{id}:
+    get:
+      summary: Get a product by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product to retrieve
+      responses:
+        '200':
+          description: Product data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a product by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku:
+                  type: string
+                  example: P002-UPD
+                name:
+                  type: string
+                  example: Updated Latte
+                category_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c2
+                unit:
+                  type: string
+                  example: cup
+                price:
+                  type: number
+                  format: float
+                  example: 32000
+                cost:
+                  type: number
+                  format: float
+                  example: 13000
+                tax_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c5
+                is_active:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid input, category ID, or tax ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a product by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product to delete
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /suppliers:
+    get:
+      summary: Get all active suppliers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of active suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Supplier'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new supplier
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: New Supplier Name
+                phone:
+                  type: string
+                  example: "+6281234567890"
+                email:
+                  type: string
+                  format: email
+                  example: new.supplier@example.com
+      responses:
+        '201':
+          description: Supplier created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /suppliers/{id}:
+    get:
+      summary: Get a supplier by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the supplier to retrieve
+      responses:
+        '200':
+          description: Supplier data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a supplier by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the supplier to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Supplier Name
+                phone:
+                  type: string
+                  example: "+6281122334455"
+                email:
+                  type: string
+                  format: email
+                  example: updated.supplier@example.com
+      responses:
+        '200':
+          description: Supplier updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Soft delete a supplier by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the supplier to soft delete
+      responses:
+        '200':
+          description: Supplier soft deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Supplier not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /product-prices:
+    get:
+      summary: Get all product prices
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of product prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductPrice'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new product price
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - outlet_id
+                - price
+              properties:
+                product_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c6
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                price:
+                  type: number
+                  format: float
+                  example: 27500
+      responses:
+        '201':
+          description: Product price created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPrice'
+        '400':
+          description: Invalid input, product ID, or outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /product-prices/{id}:
+    get:
+      summary: Get a product price by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product price to retrieve
+      responses:
+        '200':
+          description: Product price data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPrice'
+        '404':
+          description: Product price not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a product price by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product price to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c6
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                price:
+                  type: number
+                  format: float
+                  example: 28000
+      responses:
+        '200':
+          description: Product price updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPrice'
+        '400':
+          description: Invalid input, product ID, or outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product price not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a product price by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product price to delete
+      responses:
+        '200':
+          description: Product price deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Product price not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /product-stocks:
+    get:
+      summary: Get all product stocks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of product stocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductStock'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new product stock
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - outlet_id
+                - qty_on_hand
+              properties:
+                product_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c6
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                qty_on_hand:
+                  type: number
+                  format: integer
+                  example: 150
+                min_stock:
+                  type: number
+                  format: integer
+                  example: 20
+      responses:
+        '201':
+          description: Product stock created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductStock'
+        '400':
+          description: Invalid input, product ID, or outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /product-stocks/{id}:
+    get:
+      summary: Get a product stock by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product stock to retrieve
+      responses:
+        '200':
+          description: Product stock data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductStock'
+        '404':
+          description: Product stock not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a product stock by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product stock to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c6
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                qty_on_hand:
+                  type: number
+                  format: integer
+                  example: 160
+                min_stock:
+                  type: number
+                  format: integer
+                  example: 25
+      responses:
+        '200':
+          description: Product stock updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductStock'
+        '400':
+          description: Invalid input, product ID, or outlet ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product stock not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a product stock by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the product stock to delete
+      responses:
+        '200':
+          description: Product stock deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Product stock not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customers:
+    get:
+      summary: Get all active customers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of active customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new customer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: New Customer Name
+                phone:
+                  type: string
+                  example: "+6281233445566"
+                email:
+                  type: string
+                  format: email
+                  example: new.customer@example.com
+                member_code:
+                  type: string
+                  nullable: true
+                  example: CUST002
+                points:
+                  type: number
+                  format: integer
+                  example: 50
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Invalid input or member code already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customers/{id}:
+    get:
+      summary: Get a customer by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the customer to retrieve
+      responses:
+        '200':
+          description: Customer data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a customer by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the customer to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Customer Name
+                phone:
+                  type: string
+                  example: "+6281122334455"
+                email:
+                  type: string
+                  format: email
+                  example: updated.customer@example.com
+                member_code:
+                  type: string
+                  nullable: true
+                  example: CUST002-UPD
+                points:
+                  type: number
+                  format: integer
+                  example: 120
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: Invalid input or member code already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Soft delete a customer by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the customer to soft delete
+      responses:
+        '200':
+          description: Customer soft deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payment-methods:
+    get:
+      summary: Get all payment methods
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new payment method
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  example: New Payment Method
+                type:
+                  type: string
+                  enum: [cash, card, ewallet, other]
+                  example: cash
+      responses:
+        '201':
+          description: Payment method created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+        '400':
+          description: Invalid input or payment method already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /payment-methods/{id}:
+    get:
+      summary: Get a payment method by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment method to retrieve
+      responses:
+        '200':
+          description: Payment method data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+        '404':
+          description: Payment method not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a payment method by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment method to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Payment Method Name
+                type:
+                  type: string
+                  enum: [cash, card, ewallet, other]
+                  example: ewallet
+      responses:
+        '200':
+          description: Payment method updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+        '400':
+          description: Invalid input or payment method already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Payment method not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a payment method by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the payment method to delete
+      responses:
+        '200':
+          description: Payment method deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Payment method not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /shifts:
+    get:
+      summary: Get all shifts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of shifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shift'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /shifts/{id}:
+    get:
+      summary: Get a shift by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the shift to retrieve
+      responses:
+        '200':
+          description: Shift data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+        '404':
+          description: Shift not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /shifts/open:
+    post:
+      summary: Open a new shift
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - register_id
+                - opened_by
+                - opening_cash
+              properties:
+                register_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c4
+                opened_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                opening_cash:
+                  type: number
+                  format: float
+                  example: 1000000
+      responses:
+        '201':
+          description: Shift opened successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+        '400':
+          description: Invalid input or an open shift already exists for this register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /shifts/close/{id}:
+    patch:
+      summary: Close an existing shift
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the shift to close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - closed_by
+                - closing_cash
+              properties:
+                closed_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c14
+                closing_cash:
+                  type: number
+                  format: float
+                  example: 2500000
+      responses:
+        '200':
+          description: Shift closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+        '400':
+          description: Invalid input or shift already closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Shift not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /shifts/{id}:
+    delete:
+      summary: Delete a shift by ID (only if not closed)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the shift to delete
+      responses:
+        '200':
+          description: Shift deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Cannot delete an open shift
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Shift not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /purchases:
+    get:
+      summary: Get all purchases
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of purchases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Purchase'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new purchase with items
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outlet_id
+                - purchased_at
+                - items
+              properties:
+                supplier_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c7
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                invoice_no:
+                  type: string
+                  example: INV-20231026-001
+                purchased_at:
+                  type: string
+                  format: date-time
+                  example: '2023-10-26T10:00:00.000Z'
+                status:
+                  type: string
+                  enum: [pending, completed, cancelled]
+                  example: completed
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - qty
+                      - cost
+                      - subtotal
+                    properties:
+                      product_id:
+                        type: string
+                        example: 60d5ec49f8c7a40015a7b8c6
+                      qty:
+                        type: number
+                        format: integer
+                        example: 5
+                      cost:
+                        type: number
+                        format: float
+                        example: 10000
+                      discount_amount:
+                        type: number
+                        format: float
+                        example: 0
+                      tax_amount:
+                        type: number
+                        format: float
+                        example: 500
+                      subtotal:
+                        type: number
+                        format: float
+                        example: 50000
+      responses:
+        '201':
+          description: Purchase created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase:
+                    $ref: '#/components/schemas/Purchase'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PurchaseItem'
+        '400':
+          description: Invalid input, supplier ID, outlet ID, or product ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /purchases/{id}:
+    get:
+      summary: Get a purchase by ID with its items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the purchase to retrieve
+      responses:
+        '200':
+          description: Purchase data with items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase:
+                    $ref: '#/components/schemas/Purchase'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PurchaseItem'
+        '404':
+          description: Purchase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a purchase by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the purchase to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, completed, cancelled]
+                  example: cancelled
+      responses:
+        '200':
+          description: Purchase updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Purchase'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Purchase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a purchase by ID (and its items)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the purchase to delete
+      responses:
+        '200':
+          description: Purchase and its items deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Purchase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /sales:
+    get:
+      summary: Get all sales
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new sale with items
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outlet_id
+                - register_id
+                - shift_id
+                - cashier_id
+                - sold_at
+                - total
+                - grand_total
+                - items
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                register_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c4
+                shift_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c12
+                cashier_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                customer_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c10
+                invoice_no:
+                  type: string
+                  example: SALE-20231026-001
+                sold_at:
+                  type: string
+                  format: date-time
+                  example: '2023-10-26T10:00:00.000Z'
+                status:
+                  type: string
+                  enum: [pending, completed, cancelled, voided]
+                  example: completed
+                total:
+                  type: number
+                  format: float
+                  example: 100000
+                discount_total:
+                  type: number
+                  format: float
+                  example: 10000
+                tax_total:
+                  type: number
+                  format: float
+                  example: 9000
+                grand_total:
+                  type: number
+                  format: float
+                  example: 99000
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - qty
+                      - price
+                      - subtotal
+                    properties:
+                      product_id:
+                        type: string
+                        example: 60d5ec49f8c7a40015a7b8c6
+                      qty:
+                        type: number
+                        format: integer
+                        example: 2
+                      price:
+                        type: number
+                        format: float
+                        example: 25000
+                      discount_amount:
+                        type: number
+                        format: float
+                        example: 0
+                      tax_amount:
+                        type: number
+                        format: float
+                        example: 5000
+                      subtotal:
+                        type: number
+                        format: float
+                        example: 50000
+                      applied_tax_rate:
+                        type: number
+                        format: float
+                        nullable: true
+                        example: 10.0
+                      tax_inclusive:
+                        type: boolean
+                        example: false
+                      unit_price_before_discount:
+                        type: number
+                        format: float
+                        nullable: true
+                        example: 25000
+      responses:
+        '201':
+          description: Sale created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sale:
+                    $ref: '#/components/schemas/Sale'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SaleItem'
+        '400':
+          description: Invalid input, outlet ID, register ID, shift ID, cashier ID, customer ID, or product ID, or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /sales/{id}:
+    get:
+      summary: Get a sale by ID with its items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the sale to retrieve
+      responses:
+        '200':
+          description: Sale data with items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sale:
+                    $ref: '#/components/schemas/Sale'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SaleItem'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a sale by ID (e.g., status)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the sale to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, completed, cancelled, voided]
+                  example: cancelled
+      responses:
+        '200':
+          description: Sale updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a sale by ID (and its items)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the sale to delete
+      responses:
+        '200':
+          description: Sale and its items deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Sale not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /returns:
+    get:
+      summary: Get all returns
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of returns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Return'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new return with items
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - outlet_id
+                - processed_by
+                - items
+              properties:
+                type:
+                  type: string
+                  enum: [sales, purchase]
+                  example: sales
+                ref_sale_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c17
+                ref_purchase_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c15
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                processed_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                reason:
+                  type: string
+                  nullable: true
+                  example: Customer changed mind
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - qty
+                      - amount
+                    properties:
+                      product_id:
+                        type: string
+                        example: 60d5ec49f8c7a40015a7b8c6
+                      qty:
+                        type: number
+                        format: integer
+                        example: 1
+                      amount:
+                        type: number
+                        format: float
+                        example: 25000
+      responses:
+        '201':
+          description: Return created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  return:
+                    $ref: '#/components/schemas/Return'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReturnItem'
+        '400':
+          description: Invalid input, reference ID, outlet ID, user ID, or product ID, or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /returns/{id}:
+    get:
+      summary: Get a return by ID with its items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the return to retrieve
+      responses:
+        '200':
+          description: Return data with items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  return:
+                    $ref: '#/components/schemas/Return'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReturnItem'
+        '404':
+          description: Return not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a return by ID (and its items)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the return to delete
+      responses:
+        '200':
+          description: Return and its items deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Return not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /stock-adjustments:
+    get:
+      summary: Get all stock adjustments
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of stock adjustments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockAdjustment'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new stock adjustment with items
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outlet_id
+                - adjusted_by
+                - items
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                adjusted_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                reason:
+                  type: string
+                  nullable: true
+                  example: Damaged stock
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - delta_qty
+                    properties:
+                      product_id:
+                        type: string
+                        example: 60d5ec49f8c7a40015a7b8c6
+                      delta_qty:
+                        type: number
+                        format: integer
+                        example: -2
+      responses:
+        '201':
+          description: Stock adjustment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stockAdjustment:
+                    $ref: '#/components/schemas/StockAdjustment'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StockAdjustmentItem'
+        '400':
+          description: Invalid input, outlet ID, user ID, product ID, or insufficient stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /stock-adjustments/{id}:
+    get:
+      summary: Get a stock adjustment by ID with its items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the stock adjustment to retrieve
+      responses:
+        '200':
+          description: Stock adjustment data with items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stockAdjustment:
+                    $ref: '#/components/schemas/StockAdjustment'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StockAdjustmentItem'
+        '404':
+          description: Stock adjustment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a stock adjustment by ID (and its items)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the stock adjustment to delete
+      responses:
+        '200':
+          description: Stock adjustment and its items deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Stock adjustment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /stock-movements:
+    get:
+      summary: Get all stock movements
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of stock movements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockMovement'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /stock-movements/{id}:
+    get:
+      summary: Get a stock movement by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the stock movement to retrieve
+      responses:
+        '200':
+          description: Stock movement data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovement'
+        '404':
+          description: Stock movement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /promotions:
+    get:
+      summary: Get all promotions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Promotion'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new promotion with rules
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - start_at
+                - end_at
+                - rules
+              properties:
+                name:
+                  type: string
+                  example: Holiday Discount
+                type:
+                  type: string
+                  enum: [percentage_off, amount_off, buy_x_get_y]
+                  example: percentage_off
+                start_at:
+                  type: string
+                  format: date-time
+                  example: '2023-12-01T00:00:00.000Z'
+                end_at:
+                  type: string
+                  format: date-time
+                  example: '2023-12-31T23:59:59.000Z'
+                is_active:
+                  type: boolean
+                  example: true
+                rules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: string
+                        nullable: true
+                        example: 60d5ec49f8c7a40015a7b8c6
+                      min_qty:
+                        type: number
+                        format: integer
+                        example: 1
+                      percent_off:
+                        type: number
+                        format: float
+                        example: 15
+                      amount_off:
+                        type: number
+                        format: float
+                        example: 0
+      responses:
+        '201':
+          description: Promotion created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  promotion:
+                    $ref: '#/components/schemas/Promotion'
+                  rules:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PromotionRule'
+        '400':
+          description: Invalid input or product ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /promotions/{id}:
+    get:
+      summary: Get a promotion by ID with its rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the promotion to retrieve
+      responses:
+        '200':
+          description: Promotion data with rules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  promotion:
+                    $ref: '#/components/schemas/Promotion'
+                  rules:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PromotionRule'
+        '404':
+          description: Promotion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update a promotion by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the promotion to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: New Year Sale
+                type:
+                  type: string
+                  enum: [percentage_off, amount_off, buy_x_get_y]
+                  example: amount_off
+                start_at:
+                  type: string
+                  format: date-time
+                  example: '2024-01-01T00:00:00.000Z'
+                end_at:
+                  type: string
+                  format: date-time
+                  example: '2024-01-07T23:59:59.000Z'
+                is_active:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Promotion updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Promotion'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Promotion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a promotion by ID (and its rules)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the promotion to delete
+      responses:
+        '200':
+          description: Promotion and its rules deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Promotion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /expenses:
+    get:
+      summary: Get all expenses
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Expense'
+        '500':
+          description: Server error
+
+    AuditLog:
+      type: object
+      required:
+        - action
+        - entity
+        - created_at
+      properties:
+        _id:
+          type: string
+          readOnly: true
+          example: 60d5ec49f8c7a40015a7b8c28
+        actor_id:
+          type: string
+          nullable: true
+          example: 60d5ec49f8c7a40015a7b8c13
+          description: ID of the user who performed the action, null for system actions
+        action:
+          type: string
+          description: Type of action performed (e.g., 'create', 'update', 'delete', 'login')
+          example: create
+        entity:
+          type: string
+          description: Name of the entity affected (e.g., 'User', 'Product', 'Sale')
+          example: User
+        entity_id:
+          type: string
+          nullable: true
+          description: ID of the entity affected
+          example: 60d5ec49f8c7a40015a7b8c13
+        meta_json:
+          type: object
+          description: Additional metadata in JSON format
+          example: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: '2023-10-26T16:00:00.000Z'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new expense
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - outlet_id
+                - category
+                - amount
+                - noted_by
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                shift_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c12
+                category:
+                  type: string
+                  example: Utilities
+                amount:
+                  type: number
+                  format: float
+                  example: 150000
+                noted_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                note:
+                  type: string
+                  nullable: true
+                  example: Electricity bill
+      responses:
+        '201':
+          description: Expense created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '400':
+          description: Invalid input, outlet ID, shift ID, or user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /expenses/{id}:
+    get:
+      summary: Get an expense by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the expense to retrieve
+      responses:
+        '200':
+          description: Expense data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '404':
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update an expense by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the expense to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outlet_id:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c1
+                shift_id:
+                  type: string
+                  nullable: true
+                  example: 60d5ec49f8c7a40015a7b8c12
+                category:
+                  type: string
+                  example: Rent
+                amount:
+                  type: number
+                  format: float
+                  example: 2000000
+                noted_by:
+                  type: string
+                  example: 60d5ec49f8c7a40015a7b8c13
+                note:
+                  type: string
+                  nullable: true
+                  example: Monthly rent payment
+      responses:
+        '200':
+          description: Expense updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '400':
+          description: Invalid input, outlet ID, shift ID, or user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an expense by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the expense to delete
+      responses:
+        '200':
+          description: Expense deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items:
+    get:
+      summary: Get a list of protected items (example)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of protected items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: Protected Item 1
+        '401':
+          description: Unauthorized - No token provided
+        '403':
+          description: Forbidden - Invalid token
+        '500':
+          description: Server error
+  /auditlogs:
+    get:
+      summary: Get all audit logs (Admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+        '401':
+          description: Unauthorized - No token provided or invalid token
+        '403':
+          description: Forbidden - User does not have Admin role
+        '500':
+          description: Server error
+  /auditlogs/{id}:
+    get:
+      summary: Get a single audit log by ID (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the audit log to retrieve
+      responses:
+        '200':
+          description: Audit log data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+        '401':
+          description: Unauthorized - No token provided or invalid token
+        '403':
+          description: Forbidden - User does not have Admin role
+        '404':
+          description: Audit log not found
+        '500':
+          description: Server error

@@ -24,7 +24,7 @@ import { Toaster as Sonner } from "./components/ui/sonner";
 type AppState = "splash" | "login" | "dashboard" | "ingredient-library" | "ingredient-detail" | "all-reports" | "settings" | "stock-out" | "user-management" | "sales-history" | "purchase-receipts" | "stock-adjustments" | "stock-movement-history" | "minimum-stock" | "master-data";
 
 export default function App() {
-  const [appState, setAppState] = useState<AppState>("ingredient-library");
+  const [appState, setAppState] = useState<AppState>("login"); // Reverted to login for full flow testing
   const [selectedIngredientId, setSelectedIngredientId] = useState<string | null>(null);
 
   const handleLogin = () => {
